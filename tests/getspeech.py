@@ -27,22 +27,27 @@ def hangup():
     print "We got a hangup notification"
     return "OK"
 
-@response_server.route('/menu/', methods=['GET', 'POST'])
-def menu():
+@response_server.route('/result/', methods=['GET', 'POST'])
+def result():
     if request.method == 'POST':
         print request.form.items()
         try:
             print "CallUUID: %s" % request.form['CallUUID']
         except:
             pass
+        speech_res = request.form['SpeechResult']
     else:
         print request.args.items()
         try:
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
+        speech_res = request.args['SpeechResult']
     r = plivohelper.Response()
-    r.addSpeak("Get Speech ends here")
+    if speech_res:
+        r.addSpeak("Speech found : %s" % str(speech_res))
+    else:
+        r.addSpeak("No speech found")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
@@ -66,7 +71,7 @@ def answered():
         except:
             pass
     r = plivohelper.Response()
-    d = r.addGetSpeech(action="http://127.0.0.1:5000/menu/", 
+    d = r.addGetSpeech(action="http://127.0.0.1:5000/result/", 
                        timeout=10, playBeep=True, 
                        engine="pocketsphinx", grammar="pizza_yesno")
     d.addSpeak("Get Speech. say yes or no")
