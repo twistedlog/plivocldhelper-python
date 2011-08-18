@@ -484,12 +484,8 @@ class Wait(Element):
     """Wait for some time to further process the call
 
     length: length of wait time in seconds
-    transferEnabled: if set to True allows the call to be transferred
-        via REST API even while in waiting state.
-        By default this is set to False, and in this case
-        transfer will only happen once wait finishes.
     """
-    VALID_ATTRS = ('length', 'transferEnabled')
+    VALID_ATTRS = ('length')
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
 
