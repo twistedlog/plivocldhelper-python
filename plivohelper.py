@@ -573,8 +573,10 @@ class Conference(Element):
           (default false)
     startConferenceOnEnter: the conference start when this member joins
           (default true)
-    endConferenceOnExit: close conference after this member leaves
-          (default false)
+    endConferenceOnExit: close conference after all members
+            with this attribute set to 'true' leave. (default false)
+    stayAlone: if 'false' and member is alone, conference is closed and member kicked out
+          (default true)
     maxMembers: max members in conference
           (0 for max : 200)
     enterSound: sound to play when a member enters
@@ -610,7 +612,7 @@ class Conference(Element):
                    'endConferenceOnExit','waitSound','enterSound', 'exitSound',
                    'timeLimit', 'hangupOnStar', 'maxMembers', 'recordFilePath',
                    'recordFileFormat', 'recordFileName', 'action', 'method',
-                   'digitsMatch', 'callbackUrl', 'callbackMethod')
+                   'digitsMatch', 'callbackUrl', 'callbackMethod', 'stayAlone')
 
     def __init__(self, room, **kwargs):
         Element.__init__(self, **kwargs)
