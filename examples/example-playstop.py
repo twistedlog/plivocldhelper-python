@@ -5,19 +5,9 @@ import sys
 
 try:
     calluuid = sys.argv[1]
-    sounds = sys.argv[2]
 except IndexError:
-    print "Need CallUUID Sounds [Legs] [Mix]"
+    print "Need CallUUID"
     sys.exit(1)
-
-try:
-    legs = sys.argv[3]
-except IndexError:
-    legs = ""
-try:
-    mix = sys.argv[4]
-except IndexError:
-    mix = 'true'
 
 # URL of the Plivo REST Service
 REST_API_URL = 'http://127.0.0.1:8088'
@@ -30,9 +20,9 @@ AUTH_TOKEN = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
 # Create a REST object
 plivo = plivohelper.REST(REST_API_URL, SID, AUTH_TOKEN, API_VERSION)
 
-call_params = {'CallUUID':calluuid, 'Sounds':sounds, 'Legs':legs, 'Length':3600, 'Mix':mix}
+call_params = {'CallUUID':calluuid}
 
 try:
-    print plivo.play(call_params)
+    print plivo.play_stop(call_params)
 except Exception, e:
     print e

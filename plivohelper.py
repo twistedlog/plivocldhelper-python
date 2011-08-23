@@ -227,6 +227,13 @@ class REST(object):
         method = 'POST'
         return self.request(path, method, call_params)
 
+    def play_stop(self, call_params):
+        """REST PlayStop on a Call Helper
+        """
+        path = '/' + self.api_version + '/PlayStop/'
+        method = 'POST'
+        return self.request(path, method, call_params)
+
     def schedule_play(self, call_params):
         """REST Schedule playing something on a call Helper
         """
@@ -416,6 +423,9 @@ class Element(object):
     def addRedirect(self, url=None, **kwargs):
         return self.append(Redirect(url, **kwargs))
 
+    def addSIPTransfer(self, url=None, **kwargs):
+        return self.append(SIPTransfer(url, **kwargs))
+
     def addHangup(self, **kwargs):
         return self.append(Hangup(**kwargs))
 
@@ -451,7 +461,8 @@ class Response(Element):
     def __init__(self):
         Element.__init__(self)
         self.nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
-            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference', 'GetSpeech')
+            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference', 'GetSpeech',
+            'SIPTransfer')
 
 class Speak(Element):
     """Speak text
@@ -496,6 +507,17 @@ class Redirect(Element):
     method: POST or GET (default POST)
     """
     VALID_ATTRS = ('method',)
+
+    def __init__(self, url=None, **kwargs):
+        Element.__init__(self, **kwargs)
+        self.body = url
+
+class SIPTransfer(Element):
+    """SIPTransfer
+
+    url: sip uris 
+    """
+    VALID_ATTRS = ()
 
     def __init__(self, url=None, **kwargs):
         Element.__init__(self, **kwargs)
@@ -673,7 +695,7 @@ class PreAnswer(Element):
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
-        self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'GetSpeech')
+        self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'GetSpeech', 'Redirect', 'SIPTransfer')
 
 
 # Plivo Utility function and Request Validation
