@@ -248,6 +248,20 @@ class REST(object):
         method = 'POST'
         return self.request(path, method, call_params)
 
+    def sound_touch(self, call_params):
+        """REST Add soundtouch audio effects to a Call
+        """
+        path = '/' + self.api_version + '/SoundTouch/'
+        method = 'POST'
+        return self.request(path, method, call_params)
+
+    def sound_touch_stop(self, call_params):
+        """REST Remove soundtouch audio effects on a Call
+        """
+        path = '/' + self.api_version + '/SoundTouchStop/'
+        method = 'POST'
+        return self.request(path, method, call_params)
+
     def conference_unmute(self, call_params):
         """REST Conference Unmute helper
         """
