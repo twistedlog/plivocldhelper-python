@@ -8,7 +8,7 @@ if sys.version_info < (2, 6):
 setup(
     name = "plivohelper",
     py_modules = ['plivohelper'],
-    version = "0.1.1",
+    version = "0.3",
     description = "Plivo API client and RESTXML generator",
     author = "Plivo Team",
     author_email = "hello@plivo.org",
@@ -20,7 +20,7 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Communications :: Telephony"
         ],
