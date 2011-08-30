@@ -262,6 +262,13 @@ class REST(object):
         method = 'POST'
         return self.request(path, method, call_params)
 
+    def send_digits(self, call_params):
+        """REST Send digits to a Call
+        """
+        path = '/' + self.api_version + '/SendDigits/'
+        method = 'POST'
+        return self.request(path, method, call_params)
+
     def conference_unmute(self, call_params):
         """REST Conference Unmute helper
         """
