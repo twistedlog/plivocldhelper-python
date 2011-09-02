@@ -598,7 +598,7 @@ class Number(Element):
     number: phone number to dial
     sendDigits: key to press after connecting to the number
     """
-    VALID_ATTRS = ('sendDigits', 'gateways', 'gatewayCodecs',
+    VALID_ATTRS = ('sendDigits', 'sendOnPreanswer', 'gateways', 'gatewayCodecs',
                    'gatewayTimeouts', 'gatewayRetries', 'extraDialString')
     def __init__(self, number, **kwargs):
         Element.__init__(self, **kwargs)
