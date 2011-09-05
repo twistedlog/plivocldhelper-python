@@ -649,8 +649,8 @@ class Conference(Element):
     callbackMethod: submit to 'callbackUrl' url using GET or POST
     digitsMatch: a list of matching digits to send with callbackUrl
             Can be a list of digits patterns separated by comma.
-    speakEvent: 'true' or 'false'. When this member speaks, 
-            send notification to callbackUrl. (default 'false')
+    floorEvent: 'true' or 'false'. When this member holds the floor,
+                send notification to callbackUrl. (default 'false')
     """
     VALID_ATTRS = ('muted','beep','startConferenceOnEnter',
                    'endConferenceOnExit','waitSound','enterSound', 'exitSound',
