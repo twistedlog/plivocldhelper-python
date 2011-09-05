@@ -657,7 +657,7 @@ class Conference(Element):
                    'timeLimit', 'hangupOnStar', 'maxMembers', 'recordFilePath',
                    'recordFileFormat', 'recordFileName', 'action', 'method',
                    'digitsMatch', 'callbackUrl', 'callbackMethod', 
-                   'stayAlone', 'speakEvent')
+                   'stayAlone', 'floorEvent')
 
     def __init__(self, room, **kwargs):
         Element.__init__(self, **kwargs)
