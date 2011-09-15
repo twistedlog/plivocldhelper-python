@@ -677,6 +677,7 @@ class Dial(Element):
     method: submit to 'action' url using GET or POST
     hangupOnStar: hangup the b leg if a leg presses start and this is true
     callerId: caller id to be send to the dialed number
+    callerName: caller name to be send to the dialed number
     timeLimit: hangup the call after these many seconds. 0 means no timeLimit
     confirmSound: Sound to be played to b leg before call is bridged
     confirmKey: Key to be pressed to bridge the call.
@@ -688,7 +689,7 @@ class Dial(Element):
     callbackMethod: submit to 'callbackUrl' url using GET or POST
     """
     VALID_ATTRS = ('action','method','timeout','hangupOnStar',
-                   'timeLimit','callerId', 'confirmSound',
+                   'timeLimit','callerId', 'callerNme', 'confirmSound',
                    'dialMusic', 'confirmKey', 'redirect',
                    'callbackUrl', 'callbackMethod', 'digitsMatch')
 
