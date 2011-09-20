@@ -460,9 +460,6 @@ class Element(object):
     def addGetDigits(self, **kwargs):
         return self.append(GetDigits(**kwargs))
 
-    def addGetSpeech(self, **kwargs):
-        return self.append(GetSpeech(**kwargs))
-
     def addNumber(self, number, **kwargs):
         return self.append(Number(number, **kwargs))
 
@@ -489,7 +486,7 @@ class Response(Element):
     def __init__(self):
         Element.__init__(self)
         self.nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
-            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference', 'GetSpeech',
+            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference',
             'SIPTransfer')
 
 class Speak(Element):
@@ -575,24 +572,6 @@ class GetDigits(Element):
     VALID_ATTRS = ('action', 'method', 'timeout', 'finishOnKey',
                    'numDigits', 'retries', 'invalidDigitsSound',
                    'validDigits', 'playBeep')
-
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.nestables = ('Speak', 'Play', 'Wait')
-
-
-class GetSpeech(Element):
-    """Get speech from the caller
-
-    action: URL to which the detected speech will be sent
-    method: submit to 'action' url using GET or POST
-    timeout: wait for this many seconds before returning
-    playBeep: play a beep after all plays and says finish
-    engine: engine to be used by detect speech
-    grammar: grammar to load
-    """
-    VALID_ATTRS = ('action', 'method', 'timeout', 
-                   'engine', 'grammar', 'playBeep')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
@@ -726,7 +705,7 @@ class PreAnswer(Element):
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
-        self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'GetSpeech', 'Redirect', 'SIPTransfer')
+        self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'Redirect', 'SIPTransfer')
 
 
 # Plivo Utility function and Request Validation
