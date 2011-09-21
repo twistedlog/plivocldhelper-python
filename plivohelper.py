@@ -689,7 +689,7 @@ class Dial(Element):
     callbackMethod: submit to 'callbackUrl' url using GET or POST
     """
     VALID_ATTRS = ('action','method','timeout','hangupOnStar',
-                   'timeLimit','callerId', 'callerNme', 'confirmSound',
+                   'timeLimit','callerId', 'callerName', 'confirmSound',
                    'dialMusic', 'confirmKey', 'redirect',
                    'callbackUrl', 'callbackMethod', 'digitsMatch')
 
