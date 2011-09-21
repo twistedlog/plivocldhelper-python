@@ -498,8 +498,7 @@ class Speak(Element):
     loop: number of times to say this text
     """
     VALID_ATTRS = ('voice', 'language',
-                   'loop', 'engine', 'type',
-                   'method')
+                   'loop')
 
     def __init__(self, text, **kwargs):
         Element.__init__(self, **kwargs)
@@ -584,8 +583,7 @@ class Number(Element):
     number: phone number to dial
     sendDigits: key to press after connecting to the number
     """
-    VALID_ATTRS = ('sendDigits', 'sendOnPreanswer', 'gateways', 'gatewayCodecs',
-                   'gatewayTimeouts', 'gatewayRetries', 'extraDialString')
+    VALID_ATTRS = ('sendDigits', 'sendOnPreanswer')
     def __init__(self, number, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = number
@@ -622,12 +620,7 @@ class Conference(Element):
           (default 0, no timeLimit)
     hangupOnStar: exit conference when member press '*'
           (default false)
-    recordFilePath: path where recording is saved.
-        (default "" so recording wont happen)
-    recordFileFormat: file format in which recording tis saved
-        (default mp3)
-    recordFileName: By default empty, if provided this name will be used for the recording
-        (any unique name)
+    record: true or false, record conference or not
     action: redirect to this URL after leaving conference
     method: submit to 'action' url using GET or POST
     callbackUrl: url to request when call enters/leaves conference
@@ -640,8 +633,8 @@ class Conference(Element):
     """
     VALID_ATTRS = ('muted','beep','startConferenceOnEnter',
                    'endConferenceOnExit','waitSound','enterSound', 'exitSound',
-                   'timeLimit', 'hangupOnStar', 'maxMembers', 'recordFilePath',
-                   'recordFileFormat', 'recordFileName', 'action', 'method',
+                   'timeLimit', 'hangupOnStar', 'maxMembers',
+                   'record', 'action', 'method',
                    'digitsMatch', 'callbackUrl', 'callbackMethod', 
                    'stayAlone', 'floorEvent')
 
@@ -668,7 +661,7 @@ class Dial(Element):
     callbackMethod: submit to 'callbackUrl' url using GET or POST
     """
     VALID_ATTRS = ('action','method','timeout','hangupOnStar',
-                   'timeLimit','callerId', 'callerNme', 'confirmSound',
+                   'timeLimit','callerId', 'callerName', 'confirmSound',
                    'dialMusic', 'confirmKey', 'redirect',
                    'callbackUrl', 'callbackMethod', 'digitsMatch')
 
@@ -684,16 +677,12 @@ class Record(Element):
     maxLength: maximum number of seconds to record (default 60)
     timeout: seconds of silence before considering the recording complete (default 500)
     playBeep: play a beep before recording (true/false, default true)
-    format: file format (default mp3)
-    filePath: complete file path to save the file to
     finishOnKey: Stop recording on this key
-    fileName: filename to be used for recording of file
     bothLegs: record both legs (true/false, default false)
               no beep will be played
     """
     VALID_ATTRS = ('action', 'method', 'timeout','finishOnKey',
-                   'maxLength', 'bothLegs', 'playBeep',
-                   'fileFormat', 'filePath', 'fileName')
+                   'maxLength', 'bothLegs', 'playBeep')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
