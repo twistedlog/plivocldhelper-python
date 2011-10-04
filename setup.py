@@ -12,7 +12,7 @@ setup(
     description = "Plivo API client and RESTXML generator",
     author = "Plivo Team",
     author_email = "hello@plivo.org",
-    url = "https://github.com/plivo/plivohelper-python",
+    url = "https://github.com/plivo/plivocldhelper-python",
     keywords = ["plivo", "rest"],
     install_requires = requires,
     classifiers = [
