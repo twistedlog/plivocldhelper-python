@@ -711,10 +711,12 @@ class Record(Element):
     fileName: filename to be used for recording of file
     bothLegs: record both legs (true/false, default false)
               no beep will be played
+    redirect: if 'false', don't redirect to 'action', only request url 
+        and continue to next element. (default 'true')
     """
     VALID_ATTRS = ('action', 'method', 'timeout','finishOnKey',
                    'maxLength', 'bothLegs', 'playBeep',
-                   'fileFormat', 'filePath', 'fileName')
+                   'fileFormat', 'filePath', 'fileName', 'redirect')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
