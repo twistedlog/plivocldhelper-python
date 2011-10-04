@@ -680,9 +680,12 @@ class Record(Element):
     finishOnKey: Stop recording on this key
     bothLegs: record both legs (true/false, default false)
               no beep will be played
+    redirect: if 'false', don't redirect to 'action', only request url 
+        and continue to next element. (default 'true')
     """
     VALID_ATTRS = ('action', 'method', 'timeout','finishOnKey',
-                   'maxLength', 'bothLegs', 'playBeep')
+                   'maxLength', 'bothLegs', 'playBeep',
+                   'redirect')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
