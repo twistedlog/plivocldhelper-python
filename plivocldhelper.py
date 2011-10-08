@@ -136,20 +136,6 @@ class REST(object):
             return json.loads(self._appengine_fetch(uri, data, method))
         return json.loads(self._urllib2_fetch(uri, data, method))
 
-    def reload_config(self, call_params):
-        """REST Reload Plivo Config helper
-        """
-        path = '/' + self.api_version + '/ReloadConfig/'
-        method = 'POST'
-        return self.request(path, method, call_params)
-
-    def reload_cache_config(self, call_params):
-        """REST Reload Plivo Cache Config helper
-        """
-        path = '/' + self.api_version + '/ReloadCacheConfig/'
-        method = 'POST'
-        return self.request(path, method, call_params)
-
     def call(self, call_params):
         """REST Call Helper
         """
@@ -252,20 +238,6 @@ class REST(object):
         """REST Cancel a Scheduled Play Helper
         """
         path = '/' + self.api_version + '/CancelScheduledPlay/'
-        method = 'POST'
-        return self.request(path, method, call_params)
-
-    def sound_touch(self, call_params):
-        """REST Add soundtouch audio effects to a Call
-        """
-        path = '/' + self.api_version + '/SoundTouch/'
-        method = 'POST'
-        return self.request(path, method, call_params)
-
-    def sound_touch_stop(self, call_params):
-        """REST Remove soundtouch audio effects on a Call
-        """
-        path = '/' + self.api_version + '/SoundTouchStop/'
         method = 'POST'
         return self.request(path, method, call_params)
 
@@ -451,9 +423,6 @@ class Element(object):
     def addRedirect(self, url=None, **kwargs):
         return self.append(Redirect(url, **kwargs))
 
-    def addSIPTransfer(self, url=None, **kwargs):
-        return self.append(SIPTransfer(url, **kwargs))
-
     def addHangup(self, **kwargs):
         return self.append(Hangup(**kwargs))
 
@@ -486,8 +455,7 @@ class Response(Element):
     def __init__(self):
         Element.__init__(self)
         self.nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
-            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference',
-            'SIPTransfer')
+            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
 
 class Speak(Element):
     """Speak text
@@ -536,17 +504,6 @@ class Redirect(Element):
         Element.__init__(self, **kwargs)
         self.body = url
 
-class SIPTransfer(Element):
-    """SIPTransfer
-
-    url: sip uris 
-    """
-    VALID_ATTRS = ()
-
-    def __init__(self, url=None, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = url
-
 class Hangup(Element):
     """Hangup the call
     """
@@ -566,7 +523,7 @@ class GetDigits(Element):
     retries: number of tries to execute all says and plays one by one
     playBeep: play a beep after all plays and says finish
     validDigits: digits which are allowed to be pressed
-    invalidDigitsSound: Sound played when invalid digit pressed
+    invalidDigitsSound: URL of the sound played when invalid digit pressed
     """
     VALID_ATTRS = ('action', 'method', 'timeout', 'finishOnKey',
                    'numDigits', 'retries', 'invalidDigitsSound',

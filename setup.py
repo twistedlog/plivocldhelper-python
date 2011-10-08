@@ -6,12 +6,12 @@ if sys.version_info < (2, 6):
     requires.append('simplejson')
 
 setup(
-    name = "plivohelper",
-    py_modules = ['plivohelper'],
-    version = "0.3.5",
-    description = "Plivo API client and RESTXML generator",
+    name = "plivocldhelper",
+    py_modules = ['plivocldhelper'],
+    version = "0.1",
+    description = "Plivo Cld API client and RESTXML generator",
     author = "Plivo Team",
-    author_email = "hello@plivo.org",
+    author_email = "hello@plivo.com",
     url = "https://github.com/plivo/plivocldhelper-python",
     keywords = ["plivo", "rest"],
     install_requires = requires,
