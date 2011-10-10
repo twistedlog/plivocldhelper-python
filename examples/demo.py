@@ -12,7 +12,8 @@ plivo = plivocldhelper.REST(SID, AUTH_TOKEN)
 # Initiate a new outbound call to user/1000 using a HTTP POST
 call_params = {
     'From': '919191919191', # Caller Id
-    'To' : '919611055344', # User Number to Call
+    #'To' : '919611055344', # User Number to Call
+    'To' : '3355566677', # User Number to Call
     'AnswerUrl' : "http://radiant-leaf-8294.herokuapp.com/response4/",
     'HangupUrl' : "http://radiant-leaf-8294.herokuapp.com/response4/",
     'RingUrl' : "http://radiant-leaf-8294.herokuapp.com/response4/",
@@ -20,7 +21,6 @@ call_params = {
 #    'HangupOnRing': '0',
 }
 
-request_uuid = ""
 
 #Perform the Call on the Rest API
 try:
@@ -30,16 +30,3 @@ except Exception, e:
     print e
     raise
 
-
-if False:
-    sleep(10)
-    # Hangup a call using a HTTP POST
-    hangup_call_params = {
-        'RequestUUID' : request_uuid.strip(), # Request UUID to hangup call
-    }
-
-    #Perform the Call on the Rest API
-    try:
-        print plivo.hangup_call(hangup_call_params)
-    except Exception, e:
-        print e

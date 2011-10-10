@@ -45,7 +45,8 @@ class REST(object):
     standalone python applications using the urllib/urlib2 libraries and
     inside Google App Engine applications using urlfetch.
     """
-    def __init__(self, url='http://testcloud.plivo.com:8088', auth_id='', auth_token='', api_version=__VERSION__):
+    def __init__(self, auth_id='', auth_token='', api_version=__VERSION__,
+                 url='http://testcloud.plivo.com:8085'):
         """initialize a object
 
         url: Rest API Url
@@ -54,7 +55,7 @@ class REST(object):
 
         returns a Plivo object
         """
-        self.url = url
+        self.url = url.rstrip('/')
         self.auth_id = auth_id
         self.auth_token = auth_token
         self.opener = None
@@ -112,7 +113,7 @@ class REST(object):
                 (r.status_code, r.content))
         return r.content
 
-    def request(self, path, method=None, data={}):
+    def request(self, path, method='POST', data={}):
         """sends a request and gets a response from the Plivo REST API
 
         path: the URL (relative to the endpoint URL, after the /v1
@@ -127,8 +128,7 @@ class REST(object):
             raise NotImplementedError(
                 'HTTP %s method not implemented' % method)
 
-        path = path.rstrip('/')
-        uri = self.url + '/' + path
+        uri = self.url + path
 
         if APPENGINE:
             return json.loads(self._appengine_fetch(uri, data, method))
