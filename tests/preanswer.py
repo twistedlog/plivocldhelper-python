@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -46,7 +46,7 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     p = r.addPreAnswer()
     p.addSpeak("Hello you are in pre answer mode")
     print "RESTXML Response => %s" % r

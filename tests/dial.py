@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -34,26 +34,26 @@ def dialed():
         print request.form.items()
     else:
         print request.args.items()
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Dial done")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
 @response_server.route('/dialmusic/', methods=['GET', 'POST'])
 def dialmusic():
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Calling now", loop=1)
-    r.addPlay("http://127.0.0.1:5000/static/duck.mp3", loop=1)
-    r.addPlay("http://127.0.0.1:5000/static/duck.mp3", loop=1)
+    r.addPlay("http://testcloud.plivo.com/static/duck.mp3", loop=1)
+    r.addPlay("http://testcloud.plivo.com/static/duck.mp3", loop=1)
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
 @response_server.route('/confirm/', methods=['GET', 'POST'])
 def confirm():
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Confirm by pressing 9", loop=1)
-    r.addPlay("http://127.0.0.1:5000/static/duck.mp3", loop=1)
-    r.addPlay("http://127.0.0.1:5000/static/duck.mp3", loop=1)
+    r.addPlay("http://testcloud.plivo.com/static/duck.mp3", loop=1)
+    r.addPlay("http://testcloud.plivo.com/static/duck.mp3", loop=1)
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
@@ -75,15 +75,15 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Dial Test")
     d = r.addDial(action="http://127.0.0.1:5000/dialed/",
                   hangupOnStar=True, timeLimit=60,
                   dialMusic="http://127.0.0.1:5000/dialmusic/",
                   confirmSound="http://127.0.0.1:5000/confirm/",
                   confirmKey="9")
-    d.addNumber("4871", gateways="sofia/gateway/pstn/", gatewayTimeouts="30")
-    d.addNumber("1749", gateways="sofia/gateway/pstn", gatewayTimeouts="30")
+    d.addNumber("4871")
+    d.addNumber("1749")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 

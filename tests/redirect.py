@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -31,7 +31,7 @@ def hangup():
 @response_server.route('/redirected/', methods=['GET', 'POST'])
 def redirected():
     print "Redirect Done !"
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addHangup()
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
@@ -55,7 +55,7 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addRedirect("http://127.0.0.1:5000/redirected/")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)

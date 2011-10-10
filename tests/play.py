@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -45,8 +45,8 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
-    r.addPlay("http://127.0.0.1:5000/static/duck.mp3", loop=10)
+    r = plivocldhelper.Response()
+    r.addPlay("http://testcloud.plivo.com:5000/static/duck.mp3", loop=10)
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
@@ -56,4 +56,4 @@ if __name__ == '__main__':
     if not os.path.isfile("templates/response_template.xml"):
         print "Error : Can't find the XML template : templates/response_template.xml"
     else:
-        response_server.run(host='127.0.0.1', port=5000)
+        response_server.run(host='0.0.0.0', port=5000)

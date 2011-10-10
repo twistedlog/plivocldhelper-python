@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -34,7 +34,7 @@ def waitmusic():
         print request.form.items()
     else:
         print request.args.items()
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Please wait")
     r.addSpeak("Be patient")
     #r.addPlay("http://127.0.0.1:5000/static/duck.mp3")
@@ -60,7 +60,7 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     p = r.addConference("plivo", muted=False, 
                         enterSound="beep:2", exitSound="beep:1",
                         startConferenceOnEnter=True, endConferenceOnExit=True,

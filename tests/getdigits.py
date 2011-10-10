@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -29,21 +29,9 @@ def hangup():
 
 @response_server.route('/menu/', methods=['GET', 'POST'])
 def menu():
-    if request.method == 'POST':
-        print request.form.items()
-        digits = request.form.get('Digits', '')
-        try:
-            print "CallUUID: %s" % request.form['CallUUID']
-        except:
-            pass
-    else:
-        print request.args.items()
-        digits = request.args.get('Digits', '')
-        try:
-            print "CallUUID: %s" % request.args['CallUUID']
-        except:
-            pass
-    r = plivohelper.Response()
+    print request.values.items()
+    digits = request.values.get("Digits", "")
+    r = plivocldhelper.Response()
     if digits:
         speak_digits = ", ".join([ d for d in digits ])
         r.addSpeak("Get Digits. Digits pressed %s" % speak_digits)
@@ -72,7 +60,7 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     d = r.addGetDigits(action="http://127.0.0.1:5000/menu/", 
                        timeout=10, retries=2, finishOnKey='#',
                        numDigits=2, playBeep=True, 

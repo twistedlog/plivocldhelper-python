@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -43,7 +43,7 @@ def result():
         except:
             pass
         speech_res = request.args['SpeechResult']
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     if speech_res:
         r.addSpeak("Speech found : %s" % str(speech_res))
     else:
@@ -70,7 +70,7 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     d = r.addGetSpeech(action="http://127.0.0.1:5000/result/", 
                        timeout=10, playBeep=True, 
                        engine="pocketsphinx", grammar="pizza_yesno")

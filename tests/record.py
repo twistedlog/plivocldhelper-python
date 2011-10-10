@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -34,7 +34,7 @@ def recorded():
         print request.form.items()
     else:
         print request.args.items()
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addHangup()
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
@@ -57,11 +57,10 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addRecord(timeout=5, finishOnKey="#",
                 maxLength=30, playBeep=True, 
-                action="http://127.0.0.1:5000/recorded/",
-                filePath="/tmp")
+                action="http://127.0.0.1:5000/recorded/")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 

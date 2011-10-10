@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-import plivohelper
+import plivocldhelper
 import os
 
 response_server = Flask("ResponseServer")
@@ -46,10 +46,8 @@ def answered():
             print "CallUUID: %s" % request.args['CallUUID']
         except:
             pass
-    r = plivohelper.Response()
+    r = plivocldhelper.Response()
     r.addSpeak("Hello World", loop=1)
-    r.addSpeak("${strepoch()}", loop=1, type="CURRENT_DATE_TIME", method="PRONOUNCED")
-    r.addSpeak("${strepoch()}", loop=5, type="CURRENT_TIME", method="PRONOUNCED")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
