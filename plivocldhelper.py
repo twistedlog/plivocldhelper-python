@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__VERSION__ = "v0.1"
+__VERSION__ = "v1"
 
 import urllib, urllib2, base64, hmac
 from hashlib import sha1
@@ -45,7 +45,7 @@ class REST(object):
     standalone python applications using the urllib/urlib2 libraries and
     inside Google App Engine applications using urlfetch.
     """
-    def __init__(self, url, auth_id='', auth_token='', api_version=__VERSION__):
+    def __init__(self, url='http://testcloud.plivo.com:8088', auth_id='', auth_token='', api_version=__VERSION__):
         """initialize a object
 
         url: Rest API Url
@@ -127,10 +127,8 @@ class REST(object):
             raise NotImplementedError(
                 'HTTP %s method not implemented' % method)
 
-        if path[0] == '/':
-            uri = self.url + path
-        else:
-            uri = self.url + '/' + path
+        path = path.rstrip('/')
+        uri = self.url + '/' + path
 
         if APPENGINE:
             return json.loads(self._appengine_fetch(uri, data, method))

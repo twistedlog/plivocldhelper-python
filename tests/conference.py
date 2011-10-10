@@ -38,7 +38,7 @@ def waitmusic():
     r.addSpeak("Please wait")
     r.addSpeak("Be patient")
     #r.addPlay("http://127.0.0.1:5000/static/duck.mp3")
-    r.addPlay("/usr/local/freeswitch/sounds/en/us/callie/ivr/8000/ivr-welcome.wav")
+    r.addPlay("http://myurl.com/welcome.wav")
     print "RESTXML Response => %s" % r
     return render_template('response_template.xml', response=r)
 
