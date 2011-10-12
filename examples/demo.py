@@ -12,7 +12,6 @@ plivo = plivocldhelper.REST(SID, AUTH_TOKEN)
 # Initiate a new outbound call to user/1000 using a HTTP POST
 call_params = {
     'From': '919191919191', # Caller Id
-    #'To' : '919611055344', # User Number to Call
     'To' : '3355566677', # User Number to Call
     'AnswerUrl' : "http://radiant-leaf-8294.herokuapp.com/response4/",
     'HangupUrl' : "http://radiant-leaf-8294.herokuapp.com/response4/",

@@ -589,7 +589,7 @@ class Conference(Element):
     VALID_ATTRS = ('muted','beep','startConferenceOnEnter',
                    'endConferenceOnExit','waitSound','enterSound', 'exitSound',
                    'timeLimit', 'hangupOnStar', 'maxMembers',
-                   'record', 'action', 'method',
+                   'record', 'action', 'method', 'redirect',
                    'digitsMatch', 'callbackUrl', 'callbackMethod', 
                    'stayAlone', 'floorEvent')
 
