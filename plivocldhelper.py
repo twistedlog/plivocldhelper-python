@@ -144,182 +144,182 @@ class REST(object):
     def bulk_call(self, call_params):
         """REST BulkCalls Helper
         """
-        path = '/' + self.api_version + '/BulkCall/'
+        path = '/' + self.api_version + '/Call/Bulk/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def group_call(self, call_params):
         """REST GroupCalls Helper
         """
-        path = '/' + self.api_version + '/GroupCall/'
+        path = '/' + self.api_version + '/Call/Group/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def transfer_call(self, call_params):
         """REST Transfer Live Call Helper
         """
-        path = '/' + self.api_version + '/TransferCall/'
+        path = '/' + self.api_version + '/Call/Transfer/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def hangup_all_calls(self):
         """REST Hangup All Live Calls Helper
         """
-        path = '/' + self.api_version + '/HangupAllCalls/'
+        path = '/' + self.api_version + '/Call/Hangup/All/'
         method = 'POST'
         return self.request(path, method)
 
     def hangup_call(self, call_params):
         """REST Hangup Live Call Helper
         """
-        path = '/' + self.api_version + '/HangupCall/'
+        path = '/' + self.api_version + '/Call/Hangup/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def schedule_hangup(self, call_params):
         """REST Schedule Hangup Helper
         """
-        path = '/' + self.api_version + '/ScheduleHangup/'
+        path = '/' + self.api_version + '/Call/Hangup/Schedule/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def cancel_scheduled_hangup(self, call_params):
         """REST Cancel a Scheduled Hangup Helper
         """
-        path = '/' + self.api_version + '/CancelScheduledHangup/'
+        path = '/' + self.api_version + '/Call/Hangup/Schedule/Cancel/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def record_start(self, call_params):
         """REST RecordStart helper
         """
-        path = '/' + self.api_version + '/RecordStart/'
+        path = '/' + self.api_version + '/Call/Record/Start/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def record_stop(self, call_params):
         """REST RecordStop
         """
-        path = '/' + self.api_version + '/RecordStop/'
+        path = '/' + self.api_version + '/Call/Record/Stop/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_mute(self, call_params):
         """REST Conference Mute helper
         """
-        path = '/' + self.api_version + '/ConferenceMute/'
+        path = '/' + self.api_version + '/Conference/Member/Mute/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def play(self, call_params):
         """REST Play something on a Call Helper
         """
-        path = '/' + self.api_version + '/Play/'
+        path = '/' + self.api_version + '/Call/Play/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def play_stop(self, call_params):
         """REST PlayStop on a Call Helper
         """
-        path = '/' + self.api_version + '/PlayStop/'
+        path = '/' + self.api_version + '/Call/Play/Stop/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def schedule_play(self, call_params):
         """REST Schedule playing something on a call Helper
         """
-        path = '/' + self.api_version + '/SchedulePlay/'
+        path = '/' + self.api_version + '/Call/Play/Schedule/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def cancel_scheduled_play(self, call_params):
         """REST Cancel a Scheduled Play Helper
         """
-        path = '/' + self.api_version + '/CancelScheduledPlay/'
+        path = '/' + self.api_version + '/Call/Play/Schedule/Cancel/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def send_digits(self, call_params):
         """REST Send digits to a Call
         """
-        path = '/' + self.api_version + '/SendDigits/'
+        path = '/' + self.api_version + '/Call/SendDigits/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_unmute(self, call_params):
         """REST Conference Unmute helper
         """
-        path = '/' + self.api_version + '/ConferenceUnmute/'
+        path = '/' + self.api_version + '/Conference/Member/Unmute/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_kick(self, call_params):
         """REST Conference Kick helper
         """
-        path = '/' + self.api_version + '/ConferenceKick/'
+        path = '/' + self.api_version + '/Conference/Member/Kick/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_hangup(self, call_params):
         """REST Conference Hangup helper
         """
-        path = '/' + self.api_version + '/ConferenceHangup/'
+        path = '/' + self.api_version + '/Conference/Member/Hangup/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_deaf(self, call_params):
         """REST Conference Deaf helper
         """
-        path = '/' + self.api_version + '/ConferenceDeaf/'
+        path = '/' + self.api_version + '/Conference/Member/Deaf/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_undeaf(self, call_params):
         """REST Conference Undeaf helper
         """
-        path = '/' + self.api_version + '/ConferenceUndeaf/'
+        path = '/' + self.api_version + '/Conference/Member/Undeaf/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_record_start(self, call_params):
         """REST Conference RecordStart helper
         """
-        path = '/' + self.api_version + '/ConferenceRecordStart/'
+        path = '/' + self.api_version + '/Conference/Record/Start/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_record_stop(self, call_params):
         """REST Conference RecordStop
         """
-        path = '/' + self.api_version + '/ConferenceRecordStop/'
+        path = '/' + self.api_version + '/Conference/Record/Stop/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_play(self, call_params):
         """REST Conference Play helper
         """
-        path = '/' + self.api_version + '/ConferencePlay/'
+        path = '/' + self.api_version + '/Conference/Play/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_speak(self, call_params):
         """REST Conference Speak helper
         """
-        path = '/' + self.api_version + '/ConferenceSpeak/'
+        path = '/' + self.api_version + '/Conference/Speak/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_list(self, call_params):
         """REST Conference List Helper
         """
-        path = '/' + self.api_version + '/ConferenceList/'
+        path = '/' + self.api_version + '/Conference/List/'
         method = 'POST'
         return self.request(path, method, call_params)
 
     def conference_list_members(self, call_params):
         """REST Conference List Members Helper
         """
-        path = '/' + self.api_version + '/ConferenceListMembers/'
+        path = '/' + self.api_version + '/Conference/Member/List/'
         method = 'POST'
         return self.request(path, method, call_params)
 
