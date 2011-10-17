@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import plivohelper
+import plivocldhelper
 
 
 # Sid and AuthToken
@@ -7,7 +7,7 @@ SID = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 AUTH_TOKEN = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
 
 # Create a REST object
-plivo = plivohelper.REST(SID, AUTH_TOKEN)
+plivo = plivocldhelper.REST(SID, AUTH_TOKEN)
 
 # Initiate a new outbound call to user/1000 using a HTTP POST
 # All parameters for bulk calls shall be separated by a delimeter

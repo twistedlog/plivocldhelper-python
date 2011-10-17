@@ -4,11 +4,10 @@ import sys
 
 
 try:
-    call_uuid = sys.argv[1]
+    schedid = sys.argv[1]
 except IndexError:
-    print "need CallUUID argument"
+    print "Need SchedPlayId"
     sys.exit(1)
-
 
 # Sid and AuthToken
 SID = 'OGEzODhiNDRhYTM5MTU1MzE3MWU2MTY1ZDFhNDQyZjg'
@@ -17,13 +16,9 @@ AUTH_TOKEN = 'MWU4OTA1MzgyY2JmZjEyZmI4Y2NjN2RlNTdkMGM2ZGM'
 # Create a REST object
 plivo = plivocldhelper.REST(SID, AUTH_TOKEN)
 
-# Hangup a call using a HTTP POST
-hangup_call_params = {
-    'CallUUID' : call_uuid, # CallUUID for Hangup
-}
+params = {'SchedPlayId':schedid}
 
-# Perform a hangup on a Call
 try:
-    print plivo.hangup_call(hangup_call_params)
+    print plivo.cancel_scheduled_play(params)
 except Exception, e:
     print e
