@@ -9,7 +9,7 @@ except:
     sys.exit(1)
 
 # Sid and AuthToken
-SID = 'OGEzODhiNDRhYTM5MTU1MzE3MWU2MTY1ZDFhNDQyZjg'
+SID = 'MTFMMJMZNTRHYTEXMTVM'
 AUTH_TOKEN = 'OGRmYTNkMjBkMWI3NTNiZWU3MTM2M2U0M2EwMjRm'
 
 # Create a REST object
