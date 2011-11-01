@@ -46,7 +46,7 @@ class REST(object):
     inside Google App Engine applications using urlfetch.
     """
     def __init__(self, auth_id='', auth_token='', api_version=__VERSION__,
-                 url='http://testcloud.plivo.com:8085'):
+                 url='http://api.plivo.com'):
         """initialize a object
 
         url: Rest API Url
@@ -133,6 +133,13 @@ class REST(object):
         if APPENGINE:
             return json.loads(self._appengine_fetch(uri, data, method))
         return json.loads(self._urllib2_fetch(uri, data, method))
+
+    def phone_search(self, params):
+        """REST Phone Search Helper
+        """
+        path = '/' + self.api_version + '/Phone/Search/'
+        method = 'POST'
+        return self.request(path, method, params)
 
     def call(self, call_params):
         """REST Call Helper
