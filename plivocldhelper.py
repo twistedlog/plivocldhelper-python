@@ -141,6 +141,13 @@ class REST(object):
         method = 'POST'
         return self.request(path, method, params)
 
+    def phone_order(self, params):
+        """REST Phone Order Helper
+        """
+        path = '/' + self.api_version + '/Phone/Order/'
+        method = 'POST'
+        return self.request(path, method, params)
+
     def call(self, call_params):
         """REST Call Helper
         """
