@@ -148,6 +148,13 @@ class REST(object):
         method = 'POST'
         return self.request(path, method, params)
 
+    def phone_status(self, params):
+        """REST Phone Status Helper
+        """
+        path = '/' + self.api_version + '/Phone/Status/'
+        method = 'POST'
+        return self.request(path, method, params)
+
     def call(self, call_params):
         """REST Call Helper
         """
