@@ -10,8 +10,7 @@ except:
 try:
     nxx = sys.argv[2]
 except:
-    print "Need ExchangeCode"
-    sys.exit(1)
+    nxx = ""
 
 # Sid and AuthToken
 SID = 'MTFMMJMZNTRHYTEXMTVM'
