@@ -645,7 +645,7 @@ class Dial(Element):
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
-        self.nestables = ('Number',)
+        self.nestables = ('Number', 'User')
 
 class Record(Element):
     """Record audio from caller
