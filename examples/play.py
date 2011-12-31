@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import plivocldcldhelper
+import plivocldhelper
 import sys
 
 
