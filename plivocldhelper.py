@@ -2,116 +2,66 @@
 
 __VERSION__ = "v1"
 
+
 import urllib, urllib2, base64, hmac
+from urlparse import urlparse
+from urllib import quote
 from hashlib import sha1
 from xml.dom.minidom import Document
-
-try:
-    from google.appengine.api import urlfetch
-    APPENGINE = True
-except ImportError:
-    APPENGINE = False
 try:
     import json
 except ImportError:
     import simplejson as json
+import httplib2
 
 
-class PlivoException(Exception): pass
+class PlivoException(Exception): 
+    pass
 
 
-# Plivo REST Helpers
-# ===========================================================================
+def request(url, method, params={}, extra_headers={}, auth_user=None, auth_password=None, timeout=30):
+    headers = {'User-Agent':'PlivoHelper'}
+    headers.update(extra_headers)
 
-class HTTPErrorProcessor(urllib2.HTTPErrorProcessor):
-    def https_response(self, request, response):
-        code, msg, hdrs = response.code, response.msg, response.info()
-        if code >= 300:
-            response = self.parent.error(
-                'http', request, response, code, msg, hdrs)
-        return response
+    if method in ('POST', 'PUT'):
+        headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
+    elif method in ('GET', 'DELETE'):
+        if params:
+            qs = urlparse(url).query
+            encoded_params = urllib.urlencode(params, doseq=True)
+            if qs:
+                url = '%s&%s' % (url, encoded_params)
+            else:
+                url = '%s?%s' % (url, encoded_params)
+        params = {}
 
-class HTTPErrorAppEngine(Exception): pass
+    h = httplib2.Http(".cache", timeout=timeout)
+    h.follow_all_redirects = True
 
-class PlivoUrlRequest(urllib2.Request):
-    def get_method(self):
-        if getattr(self, 'http_method', None):
-            return self.http_method
-        return urllib2.Request.get_method(self)
+    if auth_user and auth_password:
+        h.add_credentials(auth_user, auth_password)
+
+    if method == 'POST':
+        r, content = h.request(url, "POST", body=urllib.urlencode(params), headers=headers)
+    elif method == 'DELETE':
+        r, content = h.request(url, "DELETE", body='', headers=headers)
+    elif method == 'PUT':
+        r, content = h.request(url, "PUT", body=urllib.urlencode(params), headers=headers)
+    else:
+        r, content = h.request(url, "GET", headers=headers)
+    return (r.status, content, r)
+
 
 class REST(object):
-    """Plivo helper class for making
-    REST requests to the Plivo API.  This helper library works both in
-    standalone python applications using the urllib/urlib2 libraries and
-    inside Google App Engine applications using urlfetch.
-    """
-    def __init__(self, auth_id='', auth_token='', api_version=__VERSION__,
+    """Plivo helper class for making REST apis requests"""
+    def __init__(self, auth_id='', auth_token='', 
+                 api_version=__VERSION__,
                  url='http://api.plivo.com'):
-        """initialize a object
-
-        url: Rest API Url
-        auth_id: Plivo SID/ID
-        auth_token: Plivo token
-
-        returns a Plivo object
-        """
         self.url = url.rstrip('/')
         self.auth_id = auth_id
         self.auth_token = auth_token
         self.opener = None
         self.api_version = api_version
-
-    def _build_get_uri(self, uri, params):
-        if params:
-            if uri.find('?') > 0:
-                if uri[-1] != '&':
-                    uri += '&'
-                uri = uri + urllib.urlencode(params)
-            else:
-                uri = uri + '?' + urllib.urlencode(params)
-        return uri
-
-    def _urllib2_fetch(self, uri, params, method=None):
-        # install error processor to handle HTTP 201 response correctly
-        if self.opener == None:
-            self.opener = urllib2.build_opener(HTTPErrorProcessor)
-            urllib2.install_opener(self.opener)
-
-        if method and method == 'GET':
-            uri = self._build_get_uri(uri, params)
-            req = PlivoUrlRequest(uri)
-        else:
-            req = PlivoUrlRequest(uri, urllib.urlencode(params))
-            if method and (method == 'DELETE' or method == 'PUT'):
-                req.http_method = method
-
-        authstring = base64.encodestring('%s:%s' % (self.auth_id, self.auth_token))
-        authstring = authstring.replace('\n', '')
-        req.add_header("Authorization", "Basic %s" % authstring)
-
-        response = urllib2.urlopen(req)
-        return response.read()
-
-    def _appengine_fetch(self, uri, params, method):
-        if method == 'GET':
-            uri = self._build_get_uri(uri, params)
-
-        try:
-            httpmethod = getattr(urlfetch, method)
-        except AttributeError:
-            raise NotImplementedError(
-                "Google App Engine does not support method '%s'" % method)
-
-        authstring = base64.encodestring('%s:%s' % (self.auth_id, self.auth_token))
-        authstring = authstring.replace('\n', '')
-        r = urlfetch.fetch(url=uri, payload=urllib.urlencode(params),
-            method=httpmethod,
-            headers={'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic %s' % authstring})
-        if r.status_code >= 300:
-            raise HTTPErrorAppEngine("HTTP %s: %s" % \
-                (r.status_code, r.content))
-        return r.content
 
     def request(self, path, method='POST', data={}):
         """sends a request and gets a response from the Plivo REST API
@@ -127,213 +77,348 @@ class REST(object):
         if method and method not in ['GET', 'POST', 'DELETE', 'PUT']:
             raise NotImplementedError(
                 'HTTP %s method not implemented' % method)
+        uri = self.url + '/' + self.api_version + path
+        code, content, rh = request(uri, method, params=data, 
+                                    auth_user=self.auth_id,
+                                    auth_password=self.auth_token
+                                   )
+        if code > 204:
+            error = {'error':content}
+            return (code, error)
+        if content:
+            content = json.loads(content)
+        else:
+            content = {}
+        return (code, content)
 
-        uri = self.url + path
+    ## Accounts ##
+    def account(self):
+        path = '/Account/'
+        method = 'GET'
+        return self.request(path, method)
 
-        if APPENGINE:
-            return json.loads(self._appengine_fetch(uri, data, method))
-        return json.loads(self._urllib2_fetch(uri, data, method))
+    def account_info(self):
+        path = '/Account/%s/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
 
-    def phone_search(self, params):
-        """REST Phone Search Helper
-        """
-        path = '/' + self.api_version + '/Phone/Search/'
+    def account_change(self, **params):
+        path = '/Account/%s/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def phone_order(self, params):
-        """REST Phone Order Helper
-        """
-        path = '/' + self.api_version + '/Phone/Order/'
+    ## Subaccount ##
+    def subaccount_info(self, subauth_id, **params):
+        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
+        method = 'GET'
+        return self.request(path, method, params)
+
+    def subaccount_change(self, subauth_id, **params):
+        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
         method = 'POST'
         return self.request(path, method, params)
 
-    def phone_status(self, params):
-        """REST Phone Status Helper
-        """
-        path = '/' + self.api_version + '/Phone/Status/'
+    def subaccount_delete(self, subauth_id):
+        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Applications ##
+    def applications_info(self, **params):
+        path = '/Account/%s/Applications/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method, params)
+
+    def application_create(self, **params):
+        path = '/Account/%s/Applications/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def call(self, params):
-        """REST Call Helper
-        """
-        path = '/' + self.api_version + '/Call/'
+    def application_info(self, app_id):
+        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
+        method = 'GET'
+        return self.request(path, method)
+
+    def application_change(self, app_id, **params):
+        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
+        method = 'GET'
+        return self.request(path, method, params)
+
+    def application_delete(self, app_id):
+        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Incoming Numbers ##
+    def incoming_numbers_info(self, **params):
+        path = '/Account/%s/IncomingNumbers/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method, params)
+
+    def incoming_number_order(self, **params):
+        path = '/Account/%s/IncomingNumbers/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def bulk_call(self, params):
-        """REST BulkCalls Helper
-        """
-        path = '/' + self.api_version + '/Call/Bulk/'
+    def incoming_number_info(self, number):
+        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
+        method = 'GET'
+        return self.request(path, method)
+
+    def incoming_number_change(self, number, **params):
+        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
         method = 'POST'
         return self.request(path, method, params)
 
-    def group_call(self, params):
-        """REST GroupCalls Helper
-        """
-        path = '/' + self.api_version + '/Call/Group/'
+    def incoming_number_delete(self, number):
+        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Schedule ##
+    def schedule_cancel(self, task_id):
+        path = '/Account/%s/ScheduleCancel/%s/' % (self.auth_id, task_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Outgoing Caller ID ##
+    def outgoing_callerids_info(self, **params):
+        path = '/Account/%s/OutgoingCallerIds/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method, params)
+
+    def outgoing_callerid_add(self, **params):
+        path = '/Account/%s/OutgoingCallerIds/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def transfer_call(self, params):
-        """REST Transfer Live Call Helper
-        """
-        path = '/' + self.api_version + '/Call/Transfer/'
+    ## Calls ##
+    def calls_info(self):
+        path = '/Account/%s/Calls/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
+
+    def make_call(self, **params):
+        path = '/Account/%s/Calls/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def hangup_all_calls(self, params={}):
-        """REST Hangup All Live Calls Helper
-        """
-        path = '/' + self.api_version + '/Call/Hangup/All/'
+    def calls_hangup(self):
+        path = '/Account/%s/Calls/' % self.auth_id
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def call_info(self, calluuid):
+        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
+        method = 'GET'
+        return self.request(path, method)
+
+    def call_transfer(self, calluuid, params):
+        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
         method = 'POST'
         return self.request(path, method, params)
 
-    def hangup_call(self, params):
-        """REST Hangup Live Call Helper
-        """
-        path = '/' + self.api_version + '/Call/Hangup/'
+    def call_hangup(self, calluuid):
+        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def call_record_start(self, calluuid, **params):
+        path = '/Account/%s/Calls/%s/Record/' % (self.auth_id, calluuid)
         method = 'POST'
         return self.request(path, method, params)
 
-    def schedule_cancel(self, params):
-        """REST schedule Cancel Helper
-        """
-        path = '/' + self.api_version + '/Schedule/Cancel/'
+    def call_record_stop(self, calluuid, **params):
+        path = '/Account/%s/Calls/%s/Record/' % (self.auth_id, calluuid)
+        method = 'DELETE'
+        return self.request(path, method, params)
+
+    def call_play_start(self, calluuid, **params):
+        path = '/Account/%s/Calls/%s/Play/' % (self.auth_id, calluuid)
         method = 'POST'
         return self.request(path, method, params)
 
-    def schedule_list(self, params={}):
-        """REST schedule List Helper
-        """
-        path = '/' + self.api_version + '/Schedule/List/'
+    def call_play_stop(self, calluuid):
+        path = '/Account/%s/Calls/%s/Play/' % (self.auth_id, calluuid)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def call_send_dtmf(self, calluuid, **params):
+        path = '/Account/%s/Calls/%s/DTMF/' % (self.auth_id, calluuid)
         method = 'POST'
         return self.request(path, method, params)
 
-    def record_start(self, params):
-        """REST RecordStart helper
-        """
-        path = '/' + self.api_version + '/Call/Record/Start/'
+    def call_recordings(self, calluuid):
+        path = '/Account/%s/Calls/%s/Recordings/' % (self.auth_id, calluuid)
+        method = 'GET'
+        return self.request(path, method)
+
+    def call_logs(self, calluuid):
+        path = '/Account/%s/Calls/%s/Logs/' % (self.auth_id, calluuid)
+        method = 'GET'
+        return self.request(path, method)
+
+    ## Calls Requests ##
+    def request_hangup(self, requestuuid):
+        path = '/Account/%s/Requests/%s/' % (self.auth_id, requestuuid)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Conferences ##
+    def conferences_info(self):
+        path = '/Account/%s/Conferences/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
+
+    def conferences_hangup(self):
+        path = '/Account/%s/Conferences/' % self.auth_id
+        method = 'DELETE'
+        return self.request(path, method)
+        
+    def conference_info(self, conference_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/' % (self.auth_id, conf)
+        method = 'GET'
+        return self.request(path, method)
+
+    def conference_hangup(self, conference_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/' % (self.auth_id, conf)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_hangup_member(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/' % (self.auth_id, conf, member_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_play_start(self, conference_id, member_id, **params):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Play/' % (self.auth_id, conf, member_id)
         method = 'POST'
         return self.request(path, method, params)
 
-    def record_stop(self, params):
-        """REST RecordStop
-        """
-        path = '/' + self.api_version + '/Call/Record/Stop/'
+    def conference_play_stop(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Play/' % (self.auth_id, conf, member_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_speak(self, conference_id, member_id, **params):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Speak/' % (self.auth_id, conf, member_id)
         method = 'POST'
         return self.request(path, method, params)
 
-    def conference_mute(self, params):
-        """REST Conference Mute helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Mute/'
+    def conference_deaf(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Deaf/' % (self.auth_id, conf, member_id)
+        method = 'POST'
+        return self.request(path, method)
+        
+    def conference_undeaf(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Deaf/' % (self.auth_id, conf, member_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_mute(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Mute/' % (self.auth_id, conf, member_id)
+        method = 'POST'
+        return self.request(path, method)
+        
+    def conference_unmute(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Mute/' % (self.auth_id, conf, member_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_kick(self, conference_id, member_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Members/%s/Kick/' % (self.auth_id, conf, member_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_record_start(self, conference_id, **params):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Record/' % (self.auth_id, conf)
+        method = 'POST'
+        return self.request(path, method)
+
+    def conference_record_stop(self, conference_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Record/' % (self.auth_id, conf)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    def conference_recordings_info(self, conference_id):
+        conf = quote(conference_id)
+        path = '/Account/%s/Conferences/%s/Recordings/' % (self.auth_id, conf)
+        method = 'GET'
+        return self.request(path, method)
+
+    ## Recordings ##
+    def account_recordings_info(self):
+        path = '/Account/%s/Recordings/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
+
+    ## Endpoints ##
+    def endpoints_info(self):
+        path = '/Account/%s/Endpoints/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
+
+    def endpoint_create(self, **params):
+        path = '/Account/%s/Endpoints/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def play(self, params):
-        """REST Play something on a Call Helper
-        """
-        path = '/' + self.api_version + '/Call/Play/'
+    def endpoints_delete_all(self):
+        path = '/Account/%s/Endpoints/' % self.auth_id
+        method = 'DELETE'
+        return self.request(path, method, params)
+
+    def endpoint_info(self, endpoint_id):
+        path = '/Account/%s/Endpoints/%s/' % (self.auth_id, endpoint_id)
+        method = 'GET'
+        return self.request(path, method)
+
+    def endpoint_delete(self, endpoint_id):
+        path = '/Account/%s/Endpoints/%s/' % (self.auth_id, endpoint_id)
+        method = 'DELETE'
+        return self.request(path, method)
+
+    ## Carriers ##
+    def carriers_info(self):
+        path = '/Account/%s/Carriers/' % self.auth_id
+        method = 'GET'
+        return self.request(path, method)
+
+    def carrier_create(self, **params):
+        path = '/Account/%s/Carriers/' % self.auth_id
         method = 'POST'
         return self.request(path, method, params)
 
-    def play_stop(self, params):
-        """REST PlayStop on a Call Helper
-        """
-        path = '/' + self.api_version + '/Call/Play/Stop/'
-        method = 'POST'
-        return self.request(path, method, params)
+    def carrier_info(self, carrier_id):
+        path = '/Account/%s/Carriers/%s/' % (self.auth_id, carrier_id)
+        method = 'GET'
+        return self.request(path, method)
 
-    def send_digits(self, params):
-        """REST Send digits to a Call
-        """
-        path = '/' + self.api_version + '/Call/SendDigits/'
-        method = 'POST'
-        return self.request(path, method, params)
+    def carrier_delete(self, carrier_id):
+        path = '/Account/%s/Carriers/%s/' % (self.auth_id, carrier_id)
+        method = 'DELETE'
+        return self.request(path, method)
 
-    def conference_unmute(self, params):
-        """REST Conference Unmute helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Unmute/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_kick(self, params):
-        """REST Conference Kick helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Kick/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_hangup(self, params):
-        """REST Conference Hangup helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Hangup/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_deaf(self, params):
-        """REST Conference Deaf helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Deaf/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_undeaf(self, params):
-        """REST Conference Undeaf helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/Undeaf/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_record_start(self, params):
-        """REST Conference RecordStart helper
-        """
-        path = '/' + self.api_version + '/Conference/Record/Start/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_record_stop(self, params):
-        """REST Conference RecordStop
-        """
-        path = '/' + self.api_version + '/Conference/Record/Stop/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_play(self, params):
-        """REST Conference Play helper
-        """
-        path = '/' + self.api_version + '/Conference/Play/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_speak(self, params):
-        """REST Conference Speak helper
-        """
-        path = '/' + self.api_version + '/Conference/Speak/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_list(self, params={}):
-        """REST Conference List Helper
-        """
-        path = '/' + self.api_version + '/Conference/List/'
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def conference_list_members(self, params):
-        """REST Conference List Members Helper
-        """
-        path = '/' + self.api_version + '/Conference/Member/List/'
-        method = 'POST'
+    ## Rates ##
+    def rates(self, **params):
+        path = '/Account/%s/Rates/' % self.auth_id
+        method = 'GET'
         return self.request(path, method, params)
 
 
-
-# RESTXML Response Helpers
-# ===========================================================================
 
 class Element(object):
     """Plivo basic element object.
@@ -454,85 +539,52 @@ class Element(object):
 
 
 class Response(Element):
-    """Plivo response object.
-
-    version: Plivo API version v0.1
-    """
     VALID_ATTRS = ()
 
     def __init__(self):
         Element.__init__(self)
         self.nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
-            'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
+                        'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
 
 class Speak(Element):
-    """Speak text
-
-    text: text to say
-    voice: voice to be used based on TTS engine
-    language: language to use
-    loop: number of times to say this text
-    """
-    VALID_ATTRS = ('voice', 'language',
-                   'loop')
+    VALID_ATTRS = ('voice', 'language', 'loop')
 
     def __init__(self, text, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = text
 
-class Play(Element):
-    """Play audio file at a URL
 
-    url: url of audio file, MIME type on file must be set correctly
-    loop: number of time to say this text
-    """
+class Play(Element):
     VALID_ATTRS = ('loop',)
+
     def __init__(self, url, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = url
 
-class Wait(Element):
-    """Wait for some time to further process the call
 
-    length: length of wait time in seconds
-    """
-    VALID_ATTRS = ('length')
+class Wait(Element):
+    VALID_ATTRS = ('length',)
+
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
 
-class Redirect(Element):
-    """Redirect call flow to another URL
 
-    url: redirect url
-    method: POST or GET (default POST)
-    """
+class Redirect(Element):
     VALID_ATTRS = ('method',)
 
     def __init__(self, url=None, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = url
 
+
 class Hangup(Element):
-    """Hangup the call
-    """
     VALID_ATTRS = ('schedule', 'reason')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
 
-class GetDigits(Element):
-    """Get digits from the caller's keypad
 
-    action: URL to which the digits entered will be sent
-    method: submit to 'action' url using GET or POST
-    numDigits: how many digits to gather before returning
-    timeout: wait for this many seconds before retry or returning
-    finishOnKey: key that triggers the end of caller input
-    retries: number of tries to execute all says and plays one by one
-    playBeep: play a beep after all plays and says finish
-    validDigits: digits which are allowed to be pressed
-    invalidDigitsSound: URL of the sound played when invalid digit pressed
-    """
+class GetDigits(Element):
     VALID_ATTRS = ('action', 'method', 'timeout', 'finishOnKey',
                    'numDigits', 'retries', 'invalidDigitsSound',
                    'validDigits', 'playBeep')
@@ -543,76 +595,26 @@ class GetDigits(Element):
 
 
 class Number(Element):
-    """Specify phone number in a nested Dial element.
-
-    number: phone number to dial
-    sendDigits: key to press after connecting to the number
-    """
     VALID_ATTRS = ('sendDigits', 'sendOnPreanswer')
+
     def __init__(self, number, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = number
 
 
 class User(Element):
-    """Specify sip user in a nested Dial element.
-
-    user: user to dial
-    sendDigits: key to press after connecting to the user
-    """
     VALID_ATTRS = ('sendDigits', 'sendOnPreanswer')
+
     def __init__(self, number, **kwargs):
         Element.__init__(self, **kwargs)
         self.body = number
 
 
 class Conference(Element):
-    """Enter a conference room.
-
-    room: room name
-
-    waitSound: sound to play while alone in conference
-          Can be a list of sound files separated by comma.
-          (default no sound)
-    muted: enter conference muted
-          (default false)
-    startConferenceOnEnter: the conference start when this member joins
-          (default true)
-    endConferenceOnExit: close conference after all members
-            with this attribute set to 'true' leave. (default false)
-    stayAlone: if 'false' and member is alone, conference is closed and member kicked out
-          (default true)
-    maxMembers: max members in conference
-          (0 for max : 200)
-    enterSound: sound to play when a member enters
-          if empty, disabled
-          if 'beep:1', play one beep
-          if 'beep:2', play two beeps
-          (default disabled)
-    exitSound: sound to play when a member exits
-          if empty, disabled
-          if 'beep:1', play one beep
-          if 'beep:2', play two beeps
-          (default disabled)
-    timeLimit: max time in seconds before closing conference
-          (default 0, no timeLimit)
-    hangupOnStar: exit conference when member press '*'
-          (default false)
-    record: true or false, record conference or not
-    action: redirect to this URL after leaving conference
-    method: submit to 'action' url using GET or POST
-    callbackUrl: url to request when call enters/leaves conference
-            or has pressed digits matching (digitsMatch)
-    callbackMethod: submit to 'callbackUrl' url using GET or POST
-    digitsMatch: a list of matching digits to send with callbackUrl
-            Can be a list of digits patterns separated by comma.
-    floorEvent: 'true' or 'false'. When this member holds the floor,
-                send notification to callbackUrl. (default 'false')
-    """
     VALID_ATTRS = ('muted','beep','startConferenceOnEnter',
                    'endConferenceOnExit','waitSound','enterSound', 'exitSound',
                    'timeLimit', 'hangupOnStar', 'maxMembers',
-                   'record', 'action', 'method', 'redirect',
+                   'record', 'recordFileFormat', 'action', 'method', 'redirect',
                    'digitsMatch', 'callbackUrl', 'callbackMethod', 
                    'stayAlone', 'floorEvent')
 
@@ -620,24 +622,8 @@ class Conference(Element):
         Element.__init__(self, **kwargs)
         self.body = room
 
-class Dial(Element):
-    """Dial another phone number and connect it to this call
 
-    action: submit the result of the dial and redirect to this URL 
-    method: submit to 'action' url using GET or POST
-    hangupOnStar: hangup the b leg if a leg presses start and this is true
-    callerId: caller id to be send to the dialed number
-    callerName: caller name to be send to the dialed number
-    timeLimit: hangup the call after these many seconds. 0 means no timeLimit
-    confirmSound: Sound to be played to b leg before call is bridged
-    confirmKey: Key to be pressed to bridge the call.
-    dialMusic: Play music to a leg while doing a dial to b leg
-                Can be a list of files separated by comma
-    redirect: if 'false', don't redirect to 'action', only request url 
-        and continue to next element. (default 'true')
-    callbackUrl: url to request when bridge starts and bridge ends
-    callbackMethod: submit to 'callbackUrl' url using GET or POST
-    """
+class Dial(Element):
     VALID_ATTRS = ('action','method','timeout','hangupOnStar',
                    'timeLimit','callerId', 'callerName', 'confirmSound',
                    'dialMusic', 'confirmKey', 'redirect',
@@ -647,30 +633,17 @@ class Dial(Element):
         Element.__init__(self, **kwargs)
         self.nestables = ('Number', 'User')
 
-class Record(Element):
-    """Record audio from caller
 
-    action: submit the result of the record to this URL
-    method: submit to 'action' url using GET or POST
-    maxLength: maximum number of seconds to record (default 60)
-    timeout: seconds of silence before considering the recording complete (default 500)
-    playBeep: play a beep before recording (true/false, default true)
-    finishOnKey: Stop recording on this key
-    bothLegs: record both legs (true/false, default false)
-              no beep will be played
-    redirect: if 'false', don't redirect to 'action', only request url 
-        and continue to next element. (default 'true')
-    """
+class Record(Element):
     VALID_ATTRS = ('action', 'method', 'timeout','finishOnKey',
                    'maxLength', 'bothLegs', 'playBeep',
-                   'redirect')
+                   'redirect', 'fileFormat')
 
     def __init__(self, **kwargs):
         Element.__init__(self, **kwargs)
 
+
 class PreAnswer(Element):
-    """Answer the call in Early Media Mode and execute nested element
-    """
     VALID_ATTRS = ()
 
     def __init__(self, **kwargs):
@@ -678,8 +651,6 @@ class PreAnswer(Element):
         self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'Redirect', 'SIPTransfer')
 
 
-# Plivo Utility function and Request Validation
-# ===========================================================================
 
 class Utils(object):
     def __init__(self, auth_id='', auth_token=''):
@@ -711,3 +682,4 @@ class Utils(object):
         # compute signature and compare signatures
         return (base64.encodestring(hmac.new(self.auth_token, s, sha1).digest()).\
             strip() == expectedSignature)
+
