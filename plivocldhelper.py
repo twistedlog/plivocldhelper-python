@@ -1,685 +1,481 @@
-# -*- coding: utf-8 -*-
-
-__VERSION__ = "v1"
+import slumber
 
 
-import urllib, urllib2, base64, hmac
-from urlparse import urlparse
-from urllib import quote
-from hashlib import sha1
-from xml.dom.minidom import Document
-try:
-    import json
-except ImportError:
-    import simplejson as json
-import httplib2
+PLIVO_VERSION = "v1"
 
 
-class PlivoException(Exception): 
+class PlivoError(Exception):
     pass
 
 
-def request(url, method, params={}, extra_headers={}, auth_user=None, auth_password=None, timeout=30):
-    headers = {'User-Agent':'PlivoHelper'}
-    headers.update(extra_headers)
-
-    if method in ('POST', 'PUT'):
-        headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-    elif method in ('GET', 'DELETE'):
-        if params:
-            qs = urlparse(url).query
-            encoded_params = urllib.urlencode(params, doseq=True)
-            if qs:
-                url = '%s&%s' % (url, encoded_params)
-            else:
-                url = '%s?%s' % (url, encoded_params)
-        params = {}
-
-    h = httplib2.Http(".cache", timeout=timeout)
-    h.follow_all_redirects = True
-
-    if auth_user and auth_password:
-        h.add_credentials(auth_user, auth_password)
-
-    if method == 'POST':
-        r, content = h.request(url, "POST", body=urllib.urlencode(params), headers=headers)
-    elif method == 'DELETE':
-        r, content = h.request(url, "DELETE", body='', headers=headers)
-    elif method == 'PUT':
-        r, content = h.request(url, "PUT", body=urllib.urlencode(params), headers=headers)
-    else:
-        r, content = h.request(url, "GET", headers=headers)
-    return (r.status, content, r)
-
-
-class REST(object):
-    """Plivo helper class for making REST apis requests"""
-    def __init__(self, auth_id='', auth_token='', 
-                 api_version=__VERSION__,
-                 url='http://api.plivo.com'):
-        self.url = url.rstrip('/')
+class RestAPI(object):
+    def __init__(self, url, auth_id, auth_token, version=PLIVO_VERSION):
+        self.version = version
+        self.url = url.rstrip('/') + '/' + self.version + '/'
         self.auth_id = auth_id
         self.auth_token = auth_token
-        self.opener = None
-        self.api_version = api_version
+        self.api = slumber.API(self.url, auth=(auth_id, auth_token))
 
-    def request(self, path, method='POST', data={}):
-        """sends a request and gets a response from the Plivo REST API
-
-        path: the URL (relative to the endpoint URL, after the /v1
-        method: the HTTP method to use, defaults to POST
-        data: for POST or PUT, a dict of data to send
-
-        returns Plivo response in XML or raises an exception on error
-        """
-        if not path:
-            raise ValueError('Invalid path parameter')
-        if method and method not in ['GET', 'POST', 'DELETE', 'PUT']:
-            raise NotImplementedError(
-                'HTTP %s method not implemented' % method)
-        uri = self.url + '/' + self.api_version + path
-        code, content, rh = request(uri, method, params=data, 
-                                    auth_user=self.auth_id,
-                                    auth_password=self.auth_token
-                                   )
-        if code > 204:
-            error = {'error':content}
-            return (code, error)
-        if content:
-            content = json.loads(content)
-        else:
-            content = {}
-        return (code, content)
+    def _api(self):
+        return self.api.Account(new(self.auth_id))
 
     ## Accounts ##
-    def account(self):
-        path = '/Account/'
-        method = 'GET'
-        return self.request(path, method)
+    def get_account(self):
+        return self._api().get()
 
-    def account_info(self):
-        path = '/Account/%s/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def modify_account(self, **params):
+        return self._api().post(params)
 
-    def account_change(self, **params):
-        path = '/Account/%s/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def get_subaccounts(self):
+        return self._api().Subaccount.get()
 
-    ## Subaccount ##
-    def subaccount_info(self, subauth_id, **params):
-        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
-        method = 'GET'
-        return self.request(path, method, params)
+    def get_subaccount(self, subauth_id):
+        return self._api().Subaccount(new(subauth_id)).get()
 
-    def subaccount_change(self, subauth_id, **params):
-        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
-        method = 'POST'
-        return self.request(path, method, params)
+    def modify_subaccount(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).post(params)
 
-    def subaccount_delete(self, subauth_id):
-        path = '/Account/%s/Subaccount/%s/' % (self.auth_id, subauth_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def delete_subaccount(self, subauth_id):
+        return self._api().Subaccount(new(subauth_id)).delete()
 
     ## Applications ##
-    def applications_info(self, **params):
-        path = '/Account/%s/Applications/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method, params)
+    def get_applications(self, **params):
+        return self._api().Application.get(params)
 
-    def application_create(self, **params):
-        path = '/Account/%s/Applications/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def create_application(self, **params):
+        return self._api().Application.post(params)
 
-    def application_info(self, app_id):
-        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
-        method = 'GET'
-        return self.request(path, method)
+    def get_application(self, app_id):
+        return self._api().Application(new(app_id)).get()
 
-    def application_change(self, app_id, **params):
-        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
-        method = 'GET'
-        return self.request(path, method, params)
+    def modify_application(self, app_id, **params):
+        return self._api().Application(new(app_id)).post(params)
 
-    def application_delete(self, app_id):
-        path = '/Account/%s/Applications/%s/' % (self.auth_id, app_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def delete_application(self, app_id):
+        return self._api().Application(new(app_id)).delete()
 
-    ## Incoming Numbers ##
-    def incoming_numbers_info(self, **params):
-        path = '/Account/%s/IncomingNumbers/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method, params)
+    def get_subaccount_applications(self, subauth_id):
+        return self._api().Subaccount(new(subauth_id)).Application.get()
 
-    def incoming_number_order(self, **params):
-        path = '/Account/%s/IncomingNumbers/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def create_subaccount_application(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Application.get(params)
 
-    def incoming_number_info(self, number):
-        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
-        method = 'GET'
-        return self.request(path, method)
+    def get_subaccount_application(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Application.get(params)
 
-    def incoming_number_change(self, number, **params):
-        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
-        method = 'POST'
-        return self.request(path, method, params)
+    def modify_subaccount_application(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Application.post(params)
 
-    def incoming_number_delete(self, number):
-        path = '/Account/%s/IncomingNumbers/%s/' % (self.auth_id, number)
-        method = 'DELETE'
-        return self.request(path, method)
+    def delete_subaccount_application(self, subauth_id):
+        return self._api().Subaccount(new(subauth_id)).Application.delete()
+
+    ## Numbers ##
+    def get_numbers(self, **params):
+        return self._api().Number.get(params)
+
+    def search_numbers(self, number, **params):
+        params['number'] = number
+        return self._api().Number.Search.get(**params)
+
+    def get_number(self, number):
+        return self._api().Number(new(number)).get()
+
+    def rent_number(self, number):
+        return self._api().Number(new(number)).post()
+
+    def unrent_number(self, number):
+        return self._api().Number(new(number)).delete()
+
+    def get_subaccount_numbers(self, **params):
+        return self._api().Number.get(params)
 
     ## Schedule ##
-    def schedule_cancel(self, task_id):
-        path = '/Account/%s/ScheduleCancel/%s/' % (self.auth_id, task_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def get_scheduled_tasks(self):
+        return self._api().Schedule.get()
 
-    ## Outgoing Caller ID ##
-    def outgoing_callerids_info(self, **params):
-        path = '/Account/%s/OutgoingCallerIds/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method, params)
-
-    def outgoing_callerid_add(self, **params):
-        path = '/Account/%s/OutgoingCallerIds/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def cancel_scheduled_task(self, task_id):
+        return self._api().Schedule(new(task_id)).delete()
 
     ## Calls ##
-    def calls_info(self):
-        path = '/Account/%s/Calls/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def get_cdrs(self, **params):
+        return self._api().Call.get(params)
+
+    def get_cdr(self, record_id):
+        return self._api().Call(new(record_id)).get()
+
+    def get_live_calls(self):
+        return self._api().Call.get({'status':'live'})
+
+    def get_live_call(self, calluuid):
+        return self._api().Call(new(calluuid)).get({'status':'live'})
 
     def make_call(self, **params):
-        path = '/Account/%s/Calls/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+        return self._api().Call.post(params)
 
-    def calls_hangup(self):
-        path = '/Account/%s/Calls/' % self.auth_id
-        method = 'DELETE'
-        return self.request(path, method)
+    def hangup_all_calls(self):
+        return self._api().Call.delete()
 
-    def call_info(self, calluuid):
-        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
-        method = 'GET'
-        return self.request(path, method)
+    def transfer_call(self, calluuid, **params):
+        return self._api().Call(new(calluuid)).post(params)
 
-    def call_transfer(self, calluuid, params):
-        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
-        method = 'POST'
-        return self.request(path, method, params)
+    def hangup_call(self, calluuid):
+        return self._api().Call(new(calluuid)).delete()
 
-    def call_hangup(self, calluuid):
-        path = '/Account/%s/Calls/%s/' % (self.auth_id, calluuid)
-        method = 'DELETE'
-        return self.request(path, method)
+    def record(self, calluuid, **params):
+        return self._api().Call(new(calluuid)).Record.post(params)
+        
+    def stop_record(self, calluuid):
+        return self._api().Call(new(calluuid)).Record.delete()
 
-    def call_record_start(self, calluuid, **params):
-        path = '/Account/%s/Calls/%s/Record/' % (self.auth_id, calluuid)
-        method = 'POST'
-        return self.request(path, method, params)
+    def play(self, calluuid, **params):
+        return self._api().Call(new(calluuid)).Play.post(params)
+        
+    def stop_play(self, calluuid):
+        return self._api().Call(new(calluuid)).Play.delete()
 
-    def call_record_stop(self, calluuid, **params):
-        path = '/Account/%s/Calls/%s/Record/' % (self.auth_id, calluuid)
-        method = 'DELETE'
-        return self.request(path, method, params)
+    def send_digits(self, calluuid, **params):
+        return self._api().Call(new(calluuid)).DTMF.post(params)
 
-    def call_play_start(self, calluuid, **params):
-        path = '/Account/%s/Calls/%s/Play/' % (self.auth_id, calluuid)
-        method = 'POST'
-        return self.request(path, method, params)
+    def get_subaccount_cdrs(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Call.get(params)
 
-    def call_play_stop(self, calluuid):
-        path = '/Account/%s/Calls/%s/Play/' % (self.auth_id, calluuid)
-        method = 'DELETE'
-        return self.request(path, method)
+    def get_subaccount_cdr(self, subauth_id, record_id):
+        return self._api().Subaccount(new(subauth_id)).Call(new(record_id)).get()
 
-    def call_send_dtmf(self, calluuid, **params):
-        path = '/Account/%s/Calls/%s/DTMF/' % (self.auth_id, calluuid)
-        method = 'POST'
-        return self.request(path, method, params)
-
-    def call_recordings(self, calluuid):
-        path = '/Account/%s/Calls/%s/Recordings/' % (self.auth_id, calluuid)
-        method = 'GET'
-        return self.request(path, method)
-
-    def call_logs(self, calluuid):
-        path = '/Account/%s/Calls/%s/Logs/' % (self.auth_id, calluuid)
-        method = 'GET'
-        return self.request(path, method)
-
-    ## Calls Requests ##
-    def request_hangup(self, requestuuid):
-        path = '/Account/%s/Requests/%s/' % (self.auth_id, requestuuid)
-        method = 'DELETE'
-        return self.request(path, method)
+    ## Calls requests ##
+    def hangup_request(self, requestuuid):
+        return self._api().Request(new(requestuuid)).delete()
 
     ## Conferences ##
-    def conferences_info(self):
-        path = '/Account/%s/Conferences/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def get_live_conferences(self, **params):
+        return self._api().Conference.get(params)
 
-    def conferences_hangup(self):
-        path = '/Account/%s/Conferences/' % self.auth_id
-        method = 'DELETE'
-        return self.request(path, method)
+    def hangup_all_conferences(self):
+        return self._api().Conference.delete()
+
+    def get_live_conference(self, conference_id, **params):
+        return self._api().Conference(new(conference_id)).get(params)
+
+    def hangup_conference(self):
+        return self._api().Conference(new(conference_id)).delete()
+
+    def hangup_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).delete()
+
+    def play_conference(self, member_id, **params):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Play.post(params)
         
-    def conference_info(self, conference_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/' % (self.auth_id, conf)
-        method = 'GET'
-        return self.request(path, method)
+    def stop_play_conference(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Play.delete()
 
-    def conference_hangup(self, conference_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/' % (self.auth_id, conf)
-        method = 'DELETE'
-        return self.request(path, method)
+    def speak_conference(self, member_id, **params):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Speak.post(params)
 
-    def conference_hangup_member(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/' % (self.auth_id, conf, member_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def deaf_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Deaf.post()
 
-    def conference_play_start(self, conference_id, member_id, **params):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Play/' % (self.auth_id, conf, member_id)
-        method = 'POST'
-        return self.request(path, method, params)
+    def undeaf_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Deaf.delete()
 
-    def conference_play_stop(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Play/' % (self.auth_id, conf, member_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def mute_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Mute.post()
 
-    def conference_speak(self, conference_id, member_id, **params):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Speak/' % (self.auth_id, conf, member_id)
-        method = 'POST'
-        return self.request(path, method, params)
+    def unmute_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Unmute.delete()
 
-    def conference_deaf(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Deaf/' % (self.auth_id, conf, member_id)
-        method = 'POST'
-        return self.request(path, method)
-        
-    def conference_undeaf(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Deaf/' % (self.auth_id, conf, member_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def kick_member(self, member_id):
+        return self._api().Conference(new(conference_id)).Member(new(member_id)).Kick.post()
 
-    def conference_mute(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Mute/' % (self.auth_id, conf, member_id)
-        method = 'POST'
-        return self.request(path, method)
-        
-    def conference_unmute(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Mute/' % (self.auth_id, conf, member_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def record_conference(self): 
+        return self._api().Conference(new(conference_id)).Record.post()
 
-    def conference_kick(self, conference_id, member_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Members/%s/Kick/' % (self.auth_id, conf, member_id)
-        method = 'DELETE'
-        return self.request(path, method)
-
-    def conference_record_start(self, conference_id, **params):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Record/' % (self.auth_id, conf)
-        method = 'POST'
-        return self.request(path, method)
-
-    def conference_record_stop(self, conference_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Record/' % (self.auth_id, conf)
-        method = 'DELETE'
-        return self.request(path, method)
-
-    def conference_recordings_info(self, conference_id):
-        conf = quote(conference_id)
-        path = '/Account/%s/Conferences/%s/Recordings/' % (self.auth_id, conf)
-        method = 'GET'
-        return self.request(path, method)
+    def stop_record_conference(self): 
+        return self._api().Conference(new(conference_id)).Record.delete()
 
     ## Recordings ##
-    def account_recordings_info(self):
-        path = '/Account/%s/Recordings/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def get_recordings(self, **params):
+        return self._api().Recording.get(params)
+
+    def get_recording(self, recording_id):
+        return self._api().Recording(new(recording_id)).get()
+
+    def get_subaccount_recording(self, subauth_id, recording_id):
+        return self._api().Subaccount(new(subauth_id)).Recording(new(recording_id)).get()
 
     ## Endpoints ##
-    def endpoints_info(self):
-        path = '/Account/%s/Endpoints/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def get_endpoints(self, **params):
+        return self._api().Endpoint.get(params)
 
-    def endpoint_create(self, **params):
-        path = '/Account/%s/Endpoints/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def create_endpoint(self, **params):
+        return self._api().Endpoint.post(params)
 
-    def endpoints_delete_all(self):
-        path = '/Account/%s/Endpoints/' % self.auth_id
-        method = 'DELETE'
-        return self.request(path, method, params)
+    def get_endpoint(self, endpoint_id):
+        return self._api().Endpoint(new(endpoint_id)).get()
 
-    def endpoint_info(self, endpoint_id):
-        path = '/Account/%s/Endpoints/%s/' % (self.auth_id, endpoint_id)
-        method = 'GET'
-        return self.request(path, method)
+    def modify_endpoint(self, endpoint_id, **params):
+        return self._api().Endpoint(new(endpoint_id)).post(params)
 
-    def endpoint_delete(self, endpoint_id):
-        path = '/Account/%s/Endpoints/%s/' % (self.auth_id, endpoint_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def delete_endpoint(self, endpoint_id):
+        return self._api().Endpoint(new(endpoint_id)).delete()
+
+    def get_endpoint(self, endpoint_id):
+        return self._api().Endpoint(new(endpoint_id)).get()
+
+    def modify_endpoint(self, endpoint_id, **params):
+        return self._api().Endpoint(new(endpoint_id)).post(params)
+
+    def delete_endpoint(self, endpoint_id):
+        return self._api().Endpoint(new(endpoint_id)).delete()
+
+    def create_subaccount_endpoint(self, subauth_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Endpoint.post(params)
+
+    def get_subaccount_endpoint(self, subauth_id, endpoint_id):
+        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).get()
+
+    def modify_subaccount_endpoint(self, subauth_id, endpoint_id, **params):
+        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).post(params)
+
+    def delete_subaccount_endpoint(self, subauth_id, endpoint_id):
+        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).delete()
 
     ## Carriers ##
-    def carriers_info(self):
-        path = '/Account/%s/Carriers/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method)
+    def get_carriers(self, **params):
+        return self._api().Carrier.get(params)
 
-    def carrier_create(self, **params):
-        path = '/Account/%s/Carriers/' % self.auth_id
-        method = 'POST'
-        return self.request(path, method, params)
+    def create_carrier(self, **params):
+        return self._api().Carrier.post(params)
 
-    def carrier_info(self, carrier_id):
-        path = '/Account/%s/Carriers/%s/' % (self.auth_id, carrier_id)
-        method = 'GET'
-        return self.request(path, method)
+    def get_carrier(self, carrier_id):
+        return self._api().Carrier(new(carrier_id)).get()
 
-    def carrier_delete(self, carrier_id):
-        path = '/Account/%s/Carriers/%s/' % (self.auth_id, carrier_id)
-        method = 'DELETE'
-        return self.request(path, method)
+    def modify_carrier(self, carrier_id, **params):
+        return self._api().Carrier(new(carrier_id)).post(params)
 
-    ## Rates ##
-    def rates(self, **params):
-        path = '/Account/%s/Rates/' % self.auth_id
-        method = 'GET'
-        return self.request(path, method, params)
+    def delete_carier(self, carrier_id):
+        return self._api().Carrier(new(carrier_id)).delete()
+
+    ## Carrier Routings ##
+    def get_carrier_routings(self, **params):
+        return self._api().CarrierRouting.get(params)
+
+    def create_carrier_routing(self, **params):
+        return self._api().CarrierRouting.post(params)
+
+    def get_carrier_routing(self, routing_id):
+        return self._api().CarrierRouting(new(routing_id)).get()
+
+    def modify_carrier_routing(self, routing_id, **params):
+        return self._api().CarrierRouting(new(routing_id)).post(params)
+
+    def delete_carrier_routing(self, routing_id):
+        return self._api().CarrierRouting(new(routing_id)).delete()
 
 
 
 class Element(object):
-    """Plivo basic element object.
-    """
-    VALID_ATTRS = ()
+    nestables = ()
+    valid_attributes = ()
 
-    def __init__(self, **kwargs):
+    def __init__(self, body='', **attributes):
+        self.attributes = {}
         self.name = self.__class__.__name__
-        self.body = None
-        self.nestables = ()
-        self.elements = []
-        self.attrs = {}
-        for k, v in kwargs.items():
-            if k == "sender":
-                k = "from"
-            self._is_valid_attribute(k)
-            v = Element.bool2txt(v)
-            if v is not None:
-                self.attrs[k] = unicode(v)
+        self.body = body
+        self.node = None
+        for k, v in attributes.iteritems():
+            if not k in self.valid_attributes:
+                raise PlivoError('invalid attribute %s for %s' % (k, self.name))
+            self.attributes[k] = self._convert_value(v)
+        self._create()
 
-    def _is_valid_attribute(self, attr):
-        if not attr in self.VALID_ATTRS:
-            raise PlivoException("Invalid attribute '%s' for Element %s" \
-                % (attr, self.name))
-
-    @staticmethod
-    def bool2txt(var):
-        """Map True to 'true'
-        and False to 'false'
-        else don't modify value
-        """
-        if var is True:
-            return 'true'
-        elif var is False:
-            return 'false'
-        return var
-
-    def __repr__(self):
-        """
-        String representation of a element
-        """
-        doc = Document()
-        return self._xml(doc).toxml()
-
-    def _xml(self, root):
-        """
-        Return an XML element representing this element
-        """
-        element = root.createElement(self.name)
-
-        # Add attributes
-        keys = self.attrs.keys()
-        keys.sort()
-        for a in keys:
-            element.setAttribute(a, self.attrs[a])
-
+    def _create(self):
+        self.node = Element(self.name, attrib=self.attributes)
         if self.body:
-            text = root.createTextNode(self.body)
-            element.appendChild(text)
-
-        for c in self.elements:
-            element.appendChild(c._xml(root))
-
-        return element
+            self.node = self.body
 
     @staticmethod
-    def check_post_get_method(method=None):
-        if not method in ('GET', 'POST'):
-            raise PlivoException("Invalid method parameter, must be 'GET' or 'POST'")
+    def _convert_value(v):
+        if v is True:
+            return u'true'
+        elif v is False:
+            return u'false'
+        elif v is None:
+            return u'none'
+        elif v == 'get':
+            return u'GET'
+        elif v == 'post':
+            return u'POST'
+        return unicode(v)
 
-    def append(self, element):
-        if not self.nestables:
-            raise PlivoException("%s is not nestable" % self.name)
-        if not element.name in self.nestables:
-            raise PlivoException("%s is not nestable inside %s" % \
-                            (element.name, self.name))
-        self.elements.append(element)
-        return element
+    def add(self, element):
+        if element.name in self.nestables:
+            self.node.append(element.node)
+        raise PlivoError('%s not nestable in %s' % (element.name, self.name))
 
-    def asUrl(self):
-        return urllib.quote(str(self))
+    def to_xml(self):
+        return etree.tostring(self.node, encoding="utf-8")
 
-    def addSpeak(self, text, **kwargs):
-        return self.append(Speak(text, **kwargs))
+    def addSpeak(**kwargs):
+        self.add(Speak(**kwargs))
 
-    def addPlay(self, url, **kwargs):
-        return self.append(Play(url, **kwargs))
+    def addPlay(**kwargs):
+        self.add(Play(**kwargs))
 
-    def addWait(self, **kwargs):
-        return self.append(Wait(**kwargs))
+    def addGetDigits(**kwargs):
+        self.add(GetDigits(**kwargs))
 
-    def addRedirect(self, url=None, **kwargs):
-        return self.append(Redirect(url, **kwargs))
+    def addRecord(**kwargs):
+        self.add(Record(**kwargs))
 
-    def addHangup(self, **kwargs):
-        return self.append(Hangup(**kwargs))
+    def addDial(**kwargs):
+        self.add(Dial(**kwargs))
 
-    def addGetDigits(self, **kwargs):
-        return self.append(GetDigits(**kwargs))
+    def addNumber(**kwargs):
+        self.add(Number(**kwargs))
 
-    def addNumber(self, number, **kwargs):
-        return self.append(Number(number, **kwargs))
+    def addUser(**kwargs):
+        self.add(User(**kwargs))
 
-    def addUser(self, user, **kwargs):
-        return self.append(User(user, **kwargs))
+    def addRedirect(**kwargs):
+        self.add(Redirect(**kwargs))
 
-    def addDial(self, **kwargs):
-        return self.append(Dial(**kwargs))
+    def addWait(**kwargs):
+        self.add(Wait(**kwargs))
 
-    def addRecord(self, **kwargs):
-        return self.append(Record(**kwargs))
+    def addHangup(**kwargs):
+        self.add(Hangup(**kwargs))
 
-    def addConference(self, name, **kwargs):
-        return self.append(Conference(name, **kwargs))
+    def addPreAnswer(**kwargs):
+        self.add(PreAnswer(**kwargs))
 
-    def addPreAnswer(self, **kwargs):
-        return self.append(PreAnswer(**kwargs))
+    def addConference(**kwargs):
+        self.add(Conference(**kwargs))
 
 
 class Response(Element):
-    VALID_ATTRS = ()
+    nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
+                 'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
+    valid_attributes = ()
 
-    def __init__(self):
-        Element.__init__(self)
-        self.nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
-                        'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
+
 
 class Speak(Element):
-    VALID_ATTRS = ('voice', 'language', 'loop')
-
-    def __init__(self, text, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = text
+    nestables = ()
+    valid_attributes = ('voice', 'language', 'loop')
+        
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No text set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
 
 
 class Play(Element):
-    VALID_ATTRS = ('loop',)
-
-    def __init__(self, url, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = url
+    nestables = ()
+    valid_attributes = ('loop')
+        
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No url set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
 
 
 class Wait(Element):
-    VALID_ATTRS = ('length',)
-
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
+    nestables = ()
+    valid_attributes = ('length')
+        
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
 
 
 class Redirect(Element):
-    VALID_ATTRS = ('method',)
-
-    def __init__(self, url=None, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = url
+    nestables = ()
+    valid_attributes = ('method')
+        
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No url set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
 
 
 class Hangup(Element):
-    VALID_ATTRS = ('schedule', 'reason')
-
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
+    nestables = ()
+    valid_attributes = ('schedule', 'reason')
+        
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
 
 
 class GetDigits(Element):
-    VALID_ATTRS = ('action', 'method', 'timeout', 'finishOnKey',
-                   'numDigits', 'retries', 'invalidDigitsSound',
-                   'validDigits', 'playBeep')
+    nestables = ('Speak', 'Play', 'Wait')
+    valid_attributes = ('action', 'method', 'timeout', 'finishOnKey',
+                        'numDigits', 'retries', 'invalidDigitsSound',
+                        'validDigits', 'playBeep')
 
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.nestables = ('Speak', 'Play', 'Wait')
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
 
 
 class Number(Element):
-    VALID_ATTRS = ('sendDigits', 'sendOnPreanswer')
+    nestables = ()
+    valid_attributes = ('sendDigits', 'sendOnPreanswer')
 
-    def __init__(self, number, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = number
-
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No number set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
+        
 
 class User(Element):
-    VALID_ATTRS = ('sendDigits', 'sendOnPreanswer')
+    nestables = ()
+    valid_attributes = ('sendDigits', 'sendOnPreanswer')
 
-    def __init__(self, number, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = number
-
-
-class Conference(Element):
-    VALID_ATTRS = ('muted','beep','startConferenceOnEnter',
-                   'endConferenceOnExit','waitSound','enterSound', 'exitSound',
-                   'timeLimit', 'hangupOnStar', 'maxMembers',
-                   'record', 'recordFileFormat', 'action', 'method', 'redirect',
-                   'digitsMatch', 'callbackUrl', 'callbackMethod', 
-                   'stayAlone', 'floorEvent')
-
-    def __init__(self, room, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.body = room
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No user set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
 
 
 class Dial(Element):
-    VALID_ATTRS = ('action','method','timeout','hangupOnStar',
-                   'timeLimit','callerId', 'callerName', 'confirmSound',
-                   'dialMusic', 'confirmKey', 'redirect',
-                   'callbackUrl', 'callbackMethod', 'digitsMatch')
+    nestables = ('Number', 'User')
+    valid_attributes = ('action','method','timeout','hangupOnStar',
+                        'timeLimit','callerId', 'callerName', 'confirmSound',
+                        'dialMusic', 'confirmKey', 'redirect',
+                        'callbackUrl', 'callbackMethod', 'digitsMatch')
 
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.nestables = ('Number', 'User')
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
+
+
+class Conference(Element):
+    nestables = ()
+    valid_attributes = ('muted','beep','startConferenceOnEnter',
+                        'endConferenceOnExit','waitSound','enterSound', 'exitSound',
+                        'timeLimit', 'hangupOnStar', 'maxMembers',
+                        'record', 'recordFileFormat', 'action', 'method', 'redirect',
+                        'digitsMatch', 'callbackUrl', 'callbackMethod',
+                        'stayAlone', 'floorEvent')
+
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No conference name set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
 
 
 class Record(Element):
-    VALID_ATTRS = ('action', 'method', 'timeout','finishOnKey',
-                   'maxLength', 'bothLegs', 'playBeep',
-                   'redirect', 'fileFormat')
+    nestables = ()
+    valid_attributes = ('action', 'method', 'timeout','finishOnKey',
+                        'maxLength', 'bothLegs', 'playBeep',
+                        'redirect', 'fileFormat')
 
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
 
 
 class PreAnswer(Element):
-    VALID_ATTRS = ()
+    nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'Redirect')
+    valid_attributes = ()
 
-    def __init__(self, **kwargs):
-        Element.__init__(self, **kwargs)
-        self.nestables = ('Play', 'Speak', 'GetDigits', 'Wait', 'Redirect', 'SIPTransfer')
-
-
-
-class Utils(object):
-    def __init__(self, auth_id='', auth_token=''):
-        """initialize a plivo utility object
-
-        auth_id: Plivo account SID/ID
-        auth_token: Plivo account token
-
-        returns a Plivo util object
-        """
-        self.auth_id = auth_id
-        self.auth_token = auth_token
-
-    def validateRequest(self, uri, postVars, expectedSignature):
-        """validate a request from plivo
-
-        uri: the full URI that Plivo requested on your server
-        postVars: post vars that Plivo sent with the request
-        expectedSignature: signature in HTTP X-Plivo-Signature header
-
-        returns true if the request passes validation, false if not
-        """
-
-        # append the POST variables sorted by key to the uri
-        s = uri
-        for k, v in sorted(postVars.items()):
-            s += k + v
-
-        # compute signature and compare signatures
-        return (base64.encodestring(hmac.new(self.auth_token, s, sha1).digest()).\
-            strip() == expectedSignature)
-
+    def __init__(self, **attributes):
+        Element.__init__(self, body='', **attributes)
