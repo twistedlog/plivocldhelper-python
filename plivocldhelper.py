@@ -297,12 +297,9 @@ class Element(object):
             if not k in self.valid_attributes:
                 raise PlivoError('invalid attribute %s for %s' % (k, self.name))
             self.attributes[k] = self._convert_value(v)
-        self._create()
-
-    def _create(self):
-        self.node = Element(self.name, attrib=self.attributes)
+        self.node = etree.Element(self.name, attrib=self.attributes)
         if self.body:
-            self.node = self.body
+            self.node.text = self.body
 
     @staticmethod
     def _convert_value(v):
@@ -321,6 +318,7 @@ class Element(object):
     def add(self, element):
         if element.name in self.nestables:
             self.node.append(element.node)
+            return element
         raise PlivoError('%s not nestable in %s' % (element.name, self.name))
 
     def to_xml(self):
@@ -332,41 +330,41 @@ class Element(object):
     def __repr__(self):
         return self.to_xml()
 
-    def addSpeak(**kwargs):
-        self.add(Speak(**kwargs))
+    def addSpeak(self, body, **kwargs):
+        return self.add(Speak(body, **kwargs))
 
-    def addPlay(**kwargs):
-        self.add(Play(**kwargs))
+    def addPlay(self, body, **kwargs):
+        return self.add(Play(body, **kwargs))
 
-    def addGetDigits(**kwargs):
-        self.add(GetDigits(**kwargs))
+    def addGetDigits(self, **kwargs):
+        return self.add(GetDigits(**kwargs))
 
-    def addRecord(**kwargs):
-        self.add(Record(**kwargs))
+    def addRecord(self, **kwargs):
+        return self.add(Record(**kwargs))
 
-    def addDial(**kwargs):
-        self.add(Dial(**kwargs))
+    def addDial(self, **kwargs):
+        return self.add(Dial(**kwargs))
 
-    def addNumber(**kwargs):
-        self.add(Number(**kwargs))
+    def addNumber(self, body, **kwargs):
+        return self.add(Number(body, **kwargs))
 
-    def addUser(**kwargs):
-        self.add(User(**kwargs))
+    def addUser(self, body, **kwargs):
+        return self.add(User(body, **kwargs))
 
-    def addRedirect(**kwargs):
-        self.add(Redirect(**kwargs))
+    def addRedirect(self, body, **kwargs):
+        return self.add(Redirect(body, **kwargs))
 
-    def addWait(**kwargs):
-        self.add(Wait(**kwargs))
+    def addWait(self, **kwargs):
+        return self.add(Wait(**kwargs))
 
-    def addHangup(**kwargs):
-        self.add(Hangup(**kwargs))
+    def addHangup(self, **kwargs):
+        return self.add(Hangup(**kwargs))
 
-    def addPreAnswer(**kwargs):
-        self.add(PreAnswer(**kwargs))
+    def addPreAnswer(self, **kwargs):
+        return self.add(PreAnswer(**kwargs))
 
-    def addConference(**kwargs):
-        self.add(Conference(**kwargs))
+    def addConference(self, body, **kwargs):
+        return self.add(Conference(body, **kwargs))
 
 
 class Response(Element):
@@ -374,8 +372,8 @@ class Response(Element):
                  'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
     valid_attributes = ()
 
-    def __init__(self, **attributes):
-        Element.__init__(self, body='', **attributes)
+    def __init__(self):
+        Element.__init__(self, body='')
 
 
 class Speak(Element):
