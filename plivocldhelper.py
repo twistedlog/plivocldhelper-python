@@ -329,6 +329,9 @@ class Element(object):
     def __str__(self):
         return self.to_xml()
 
+    def __repr__(self):
+        return self.to_xml()
+
     def addSpeak(**kwargs):
         self.add(Speak(**kwargs))
 
