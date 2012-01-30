@@ -326,6 +326,9 @@ class Element(object):
     def to_xml(self):
         return etree.tostring(self.node, encoding="utf-8")
 
+    def __str__(self):
+        return self.to_xml()
+
     def addSpeak(**kwargs):
         self.add(Speak(**kwargs))
 
