@@ -1,3 +1,8 @@
+import xml.etree.ElementTree as etree
+import base64
+import hmac
+from hashlib import sha1
+
 import slumber
 
 
@@ -6,6 +11,12 @@ PLIVO_VERSION = "v1"
 
 class PlivoError(Exception):
     pass
+
+
+def validate_signature(uri, post_params, signature, auth_id, auth_token):
+    for k, v in sorted(post_params.items()):
+        uri += k + v
+    return base64.encodestring(hmac.new(self.auth_token, s, sha1).digest()).strip() == signature 
 
 
 class RestAPI(object):
