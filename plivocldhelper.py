@@ -28,7 +28,7 @@ class RestAPI(object):
         self.api = slumber.API(self.url, auth=(auth_id, auth_token))
 
     def _api(self):
-        return self.api.Account(new(self.auth_id))
+        return self.api.Account(self.auth_id)
 
     ## Accounts ##
     def get_account(self):
@@ -41,13 +41,13 @@ class RestAPI(object):
         return self._api().Subaccount.get()
 
     def get_subaccount(self, subauth_id):
-        return self._api().Subaccount(new(subauth_id)).get()
+        return self._api().Subaccount(subauth_id).get()
 
     def modify_subaccount(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).post(params)
+        return self._api().Subaccount(subauth_id).post(params)
 
     def delete_subaccount(self, subauth_id):
-        return self._api().Subaccount(new(subauth_id)).delete()
+        return self._api().Subaccount(subauth_id).delete()
 
     ## Applications ##
     def get_applications(self, **params):
@@ -57,28 +57,28 @@ class RestAPI(object):
         return self._api().Application.post(params)
 
     def get_application(self, app_id):
-        return self._api().Application(new(app_id)).get()
+        return self._api().Application(app_id).get()
 
     def modify_application(self, app_id, **params):
-        return self._api().Application(new(app_id)).post(params)
+        return self._api().Application(app_id).post(params)
 
     def delete_application(self, app_id):
-        return self._api().Application(new(app_id)).delete()
+        return self._api().Application(app_id).delete()
 
     def get_subaccount_applications(self, subauth_id):
-        return self._api().Subaccount(new(subauth_id)).Application.get()
+        return self._api().Subaccount(subauth_id).Application.get()
 
     def create_subaccount_application(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Application.get(params)
+        return self._api().Subaccount(subauth_id).Application.get(params)
 
     def get_subaccount_application(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Application.get(params)
+        return self._api().Subaccount(subauth_id).Application.get(params)
 
     def modify_subaccount_application(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Application.post(params)
+        return self._api().Subaccount(subauth_id).Application.post(params)
 
     def delete_subaccount_application(self, subauth_id):
-        return self._api().Subaccount(new(subauth_id)).Application.delete()
+        return self._api().Subaccount(subauth_id).Application.delete()
 
     ## Numbers ##
     def get_numbers(self, **params):
@@ -89,13 +89,13 @@ class RestAPI(object):
         return self._api().Number.Search.get(**params)
 
     def get_number(self, number):
-        return self._api().Number(new(number)).get()
+        return self._api().Number(number).get()
 
     def rent_number(self, number):
-        return self._api().Number(new(number)).post()
+        return self._api().Number(number).post()
 
     def unrent_number(self, number):
-        return self._api().Number(new(number)).delete()
+        return self._api().Number(number).delete()
 
     def get_subaccount_numbers(self, **params):
         return self._api().Number.get(params)
@@ -105,20 +105,20 @@ class RestAPI(object):
         return self._api().Schedule.get()
 
     def cancel_scheduled_task(self, task_id):
-        return self._api().Schedule(new(task_id)).delete()
+        return self._api().Schedule(task_id).delete()
 
     ## Calls ##
     def get_cdrs(self, **params):
         return self._api().Call.get(params)
 
     def get_cdr(self, record_id):
-        return self._api().Call(new(record_id)).get()
+        return self._api().Call(record_id).get()
 
     def get_live_calls(self):
         return self._api().Call.get({'status':'live'})
 
     def get_live_call(self, calluuid):
-        return self._api().Call(new(calluuid)).get({'status':'live'})
+        return self._api().Call(calluuid).get({'status':'live'})
 
     def make_call(self, **params):
         return self._api().Call.post(params)
@@ -127,35 +127,35 @@ class RestAPI(object):
         return self._api().Call.delete()
 
     def transfer_call(self, calluuid, **params):
-        return self._api().Call(new(calluuid)).post(params)
+        return self._api().Call(calluuid).post(params)
 
     def hangup_call(self, calluuid):
-        return self._api().Call(new(calluuid)).delete()
+        return self._api().Call(calluuid).delete()
 
     def record(self, calluuid, **params):
-        return self._api().Call(new(calluuid)).Record.post(params)
+        return self._api().Call(calluuid).Record.post(params)
         
     def stop_record(self, calluuid):
-        return self._api().Call(new(calluuid)).Record.delete()
+        return self._api().Call(calluuid).Record.delete()
 
     def play(self, calluuid, **params):
-        return self._api().Call(new(calluuid)).Play.post(params)
+        return self._api().Call(calluuid).Play.post(params)
         
     def stop_play(self, calluuid):
-        return self._api().Call(new(calluuid)).Play.delete()
+        return self._api().Call(calluuid).Play.delete()
 
     def send_digits(self, calluuid, **params):
-        return self._api().Call(new(calluuid)).DTMF.post(params)
+        return self._api().Call(calluuid).DTMF.post(params)
 
     def get_subaccount_cdrs(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Call.get(params)
+        return self._api().Subaccount(subauth_id).Call.get(params)
 
     def get_subaccount_cdr(self, subauth_id, record_id):
-        return self._api().Subaccount(new(subauth_id)).Call(new(record_id)).get()
+        return self._api().Subaccount(subauth_id).Call(record_id).get()
 
     ## Calls requests ##
     def hangup_request(self, requestuuid):
-        return self._api().Request(new(requestuuid)).delete()
+        return self._api().Request(requestuuid).delete()
 
     ## Conferences ##
     def get_live_conferences(self, **params):
@@ -165,53 +165,53 @@ class RestAPI(object):
         return self._api().Conference.delete()
 
     def get_live_conference(self, conference_id, **params):
-        return self._api().Conference(new(conference_id)).get(params)
+        return self._api().Conference(conference_id).get(params)
 
     def hangup_conference(self):
-        return self._api().Conference(new(conference_id)).delete()
+        return self._api().Conference(conference_id).delete()
 
     def hangup_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).delete()
+        return self._api().Conference(conference_id).Member(member_id).delete()
 
     def play_conference(self, member_id, **params):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Play.post(params)
+        return self._api().Conference(conference_id).Member(member_id).Play.post(params)
         
     def stop_play_conference(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Play.delete()
+        return self._api().Conference(conference_id).Member(member_id).Play.delete()
 
     def speak_conference(self, member_id, **params):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Speak.post(params)
+        return self._api().Conference(conference_id).Member(member_id).Speak.post(params)
 
     def deaf_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Deaf.post()
+        return self._api().Conference(conference_id).Member(member_id).Deaf.post()
 
     def undeaf_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Deaf.delete()
+        return self._api().Conference(conference_id).Member(member_id).Deaf.delete()
 
     def mute_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Mute.post()
+        return self._api().Conference(conference_id).Member(member_id).Mute.post()
 
     def unmute_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Unmute.delete()
+        return self._api().Conference(conference_id).Member(member_id).Unmute.delete()
 
     def kick_member(self, member_id):
-        return self._api().Conference(new(conference_id)).Member(new(member_id)).Kick.post()
+        return self._api().Conference(conference_id).Member(member_id).Kick.post()
 
     def record_conference(self): 
-        return self._api().Conference(new(conference_id)).Record.post()
+        return self._api().Conference(conference_id).Record.post()
 
     def stop_record_conference(self): 
-        return self._api().Conference(new(conference_id)).Record.delete()
+        return self._api().Conference(conference_id).Record.delete()
 
     ## Recordings ##
     def get_recordings(self, **params):
         return self._api().Recording.get(params)
 
     def get_recording(self, recording_id):
-        return self._api().Recording(new(recording_id)).get()
+        return self._api().Recording(recording_id).get()
 
     def get_subaccount_recording(self, subauth_id, recording_id):
-        return self._api().Subaccount(new(subauth_id)).Recording(new(recording_id)).get()
+        return self._api().Subaccount(subauth_id).Recording(recording_id).get()
 
     ## Endpoints ##
     def get_endpoints(self, **params):
@@ -221,34 +221,34 @@ class RestAPI(object):
         return self._api().Endpoint.post(params)
 
     def get_endpoint(self, endpoint_id):
-        return self._api().Endpoint(new(endpoint_id)).get()
+        return self._api().Endpoint(endpoint_id).get()
 
     def modify_endpoint(self, endpoint_id, **params):
-        return self._api().Endpoint(new(endpoint_id)).post(params)
+        return self._api().Endpoint(endpoint_id).post(params)
 
     def delete_endpoint(self, endpoint_id):
-        return self._api().Endpoint(new(endpoint_id)).delete()
+        return self._api().Endpoint(endpoint_id).delete()
 
     def get_endpoint(self, endpoint_id):
-        return self._api().Endpoint(new(endpoint_id)).get()
+        return self._api().Endpoint(endpoint_id).get()
 
     def modify_endpoint(self, endpoint_id, **params):
-        return self._api().Endpoint(new(endpoint_id)).post(params)
+        return self._api().Endpoint(endpoint_id).post(params)
 
     def delete_endpoint(self, endpoint_id):
-        return self._api().Endpoint(new(endpoint_id)).delete()
+        return self._api().Endpoint(endpoint_id).delete()
 
     def create_subaccount_endpoint(self, subauth_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Endpoint.post(params)
+        return self._api().Subaccount(subauth_id).Endpoint.post(params)
 
     def get_subaccount_endpoint(self, subauth_id, endpoint_id):
-        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).get()
+        return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).get()
 
     def modify_subaccount_endpoint(self, subauth_id, endpoint_id, **params):
-        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).post(params)
+        return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).post(params)
 
     def delete_subaccount_endpoint(self, subauth_id, endpoint_id):
-        return self._api().Subaccount(new(subauth_id)).Endpoint(new(endpoint_id)).delete()
+        return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).delete()
 
     ## Carriers ##
     def get_carriers(self, **params):
@@ -258,13 +258,13 @@ class RestAPI(object):
         return self._api().Carrier.post(params)
 
     def get_carrier(self, carrier_id):
-        return self._api().Carrier(new(carrier_id)).get()
+        return self._api().Carrier(carrier_id).get()
 
     def modify_carrier(self, carrier_id, **params):
-        return self._api().Carrier(new(carrier_id)).post(params)
+        return self._api().Carrier(carrier_id).post(params)
 
     def delete_carier(self, carrier_id):
-        return self._api().Carrier(new(carrier_id)).delete()
+        return self._api().Carrier(carrier_id).delete()
 
     ## Carrier Routings ##
     def get_carrier_routings(self, **params):
@@ -274,13 +274,13 @@ class RestAPI(object):
         return self._api().CarrierRouting.post(params)
 
     def get_carrier_routing(self, routing_id):
-        return self._api().CarrierRouting(new(routing_id)).get()
+        return self._api().CarrierRouting(routing_id).get()
 
     def modify_carrier_routing(self, routing_id, **params):
-        return self._api().CarrierRouting(new(routing_id)).post(params)
+        return self._api().CarrierRouting(routing_id).post(params)
 
     def delete_carrier_routing(self, routing_id):
-        return self._api().CarrierRouting(new(routing_id)).delete()
+        return self._api().CarrierRouting(routing_id).delete()
 
 
 
