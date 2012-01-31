@@ -25,7 +25,7 @@ class RestAPI(object):
         self.url = url.rstrip('/') + '/' + self.version + '/'
         self.auth_id = auth_id
         self.auth_token = auth_token
-        self.api = slumber.API(self.url, auth=(auth_id, auth_token))
+        self.api = slumber.API(self.url, auth=(auth_id, auth_token), append_slash=True)
 
     def _api(self):
         return self.api.Account(self.auth_id)
@@ -40,6 +40,9 @@ class RestAPI(object):
     def get_subaccounts(self):
         return self._api().Subaccount.get()
 
+    def create_subaccount(self, **params):
+        return self._api().Subaccount.post(params)
+
     def get_subaccount(self, subauth_id):
         return self._api().Subaccount(subauth_id).get()
 
@@ -51,7 +54,7 @@ class RestAPI(object):
 
     ## Applications ##
     def get_applications(self, **params):
-        return self._api().Application.get(params)
+        return self._api().Application.get(**params)
 
     def create_application(self, **params):
         return self._api().Application.post(params)
@@ -69,10 +72,10 @@ class RestAPI(object):
         return self._api().Subaccount(subauth_id).Application.get()
 
     def create_subaccount_application(self, subauth_id, **params):
-        return self._api().Subaccount(subauth_id).Application.get(params)
+        return self._api().Subaccount(subauth_id).Application.get(**params)
 
     def get_subaccount_application(self, subauth_id, **params):
-        return self._api().Subaccount(subauth_id).Application.get(params)
+        return self._api().Subaccount(subauth_id).Application.get(**params)
 
     def modify_subaccount_application(self, subauth_id, **params):
         return self._api().Subaccount(subauth_id).Application.post(params)
@@ -82,10 +85,9 @@ class RestAPI(object):
 
     ## Numbers ##
     def get_numbers(self, **params):
-        return self._api().Number.get(params)
+        return self._api().Number.get(**params)
 
-    def search_numbers(self, number, **params):
-        params['number'] = number
+    def search_numbers(self, **params):
         return self._api().Number.Search.get(**params)
 
     def get_number(self, number):
@@ -98,7 +100,7 @@ class RestAPI(object):
         return self._api().Number(number).delete()
 
     def get_subaccount_numbers(self, **params):
-        return self._api().Number.get(params)
+        return self._api().Number.get(**params)
 
     ## Schedule ##
     def get_scheduled_tasks(self):
@@ -109,7 +111,7 @@ class RestAPI(object):
 
     ## Calls ##
     def get_cdrs(self, **params):
-        return self._api().Call.get(params)
+        return self._api().Call.get(**params)
 
     def get_cdr(self, record_id):
         return self._api().Call(record_id).get()
@@ -148,7 +150,7 @@ class RestAPI(object):
         return self._api().Call(calluuid).DTMF.post(params)
 
     def get_subaccount_cdrs(self, subauth_id, **params):
-        return self._api().Subaccount(subauth_id).Call.get(params)
+        return self._api().Subaccount(subauth_id).Call.get(**params)
 
     def get_subaccount_cdr(self, subauth_id, record_id):
         return self._api().Subaccount(subauth_id).Call(record_id).get()
@@ -159,13 +161,13 @@ class RestAPI(object):
 
     ## Conferences ##
     def get_live_conferences(self, **params):
-        return self._api().Conference.get(params)
+        return self._api().Conference.get(**params)
 
     def hangup_all_conferences(self):
         return self._api().Conference.delete()
 
     def get_live_conference(self, conference_id, **params):
-        return self._api().Conference(conference_id).get(params)
+        return self._api().Conference(conference_id).get(**params)
 
     def hangup_conference(self):
         return self._api().Conference(conference_id).delete()
@@ -205,7 +207,7 @@ class RestAPI(object):
 
     ## Recordings ##
     def get_recordings(self, **params):
-        return self._api().Recording.get(params)
+        return self._api().Recording.get(**params)
 
     def get_recording(self, recording_id):
         return self._api().Recording(recording_id).get()
@@ -215,7 +217,7 @@ class RestAPI(object):
 
     ## Endpoints ##
     def get_endpoints(self, **params):
-        return self._api().Endpoint.get(params)
+        return self._api().Endpoint.get(**params)
 
     def create_endpoint(self, **params):
         return self._api().Endpoint.post(params)
@@ -252,7 +254,7 @@ class RestAPI(object):
 
     ## Carriers ##
     def get_carriers(self, **params):
-        return self._api().Carrier.get(params)
+        return self._api().Carrier.get(**params)
 
     def create_carrier(self, **params):
         return self._api().Carrier.post(params)
@@ -268,7 +270,7 @@ class RestAPI(object):
 
     ## Carrier Routings ##
     def get_carrier_routings(self, **params):
-        return self._api().CarrierRouting.get(params)
+        return self._api().CarrierRouting.get(**params)
 
     def create_carrier_routing(self, **params):
         return self._api().CarrierRouting.post(params)
