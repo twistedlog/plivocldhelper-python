@@ -94,7 +94,7 @@ class RestAPI(object):
         return self._api().Number(number).get()
 
     def rent_number(self, number):
-        return self._api().Number.Action(number).post(data=None)
+        return self._api().Number.Action(number).post({})
 
     def unrent_number(self, number):
         return self._api().Number.Action(number).delete()
@@ -185,22 +185,22 @@ class RestAPI(object):
         return self._api().Conference(conference_id).Member(member_id).Speak.post(params)
 
     def deaf_member(self, member_id):
-        return self._api().Conference(conference_id).Member(member_id).Deaf.post()
+        return self._api().Conference(conference_id).Member(member_id).Deaf.post({})
 
     def undeaf_member(self, member_id):
         return self._api().Conference(conference_id).Member(member_id).Deaf.delete()
 
     def mute_member(self, member_id):
-        return self._api().Conference(conference_id).Member(member_id).Mute.post()
+        return self._api().Conference(conference_id).Member(member_id).Mute.post({})
 
     def unmute_member(self, member_id):
         return self._api().Conference(conference_id).Member(member_id).Unmute.delete()
 
     def kick_member(self, member_id):
-        return self._api().Conference(conference_id).Member(member_id).Kick.post()
+        return self._api().Conference(conference_id).Member(member_id).Kick.post({})
 
     def record_conference(self): 
-        return self._api().Conference(conference_id).Record.post()
+        return self._api().Conference(conference_id).Record.post({})
 
     def stop_record_conference(self): 
         return self._api().Conference(conference_id).Record.delete()
