@@ -94,10 +94,10 @@ class RestAPI(object):
         return self._api().Number(number).get()
 
     def rent_number(self, number):
-        return self._api().Number(number).post()
+        return self._api().Number.Action(number).post(data=None)
 
     def unrent_number(self, number):
-        return self._api().Number(number).delete()
+        return self._api().Number.Action(number).delete()
 
     def get_subaccount_numbers(self, **params):
         return self._api().Number.get(**params)
