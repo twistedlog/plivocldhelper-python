@@ -184,6 +184,9 @@ class RestAPI(object):
     def stop_play(self, calluuid):
         return self._request('DELETE', '/Call/%s/Play/' % calluuid)
 
+    def speak(self, calluuid, **params):
+        return self._request('POST', '/Call/%s/Speak/' % calluuid, data=params)
+        
     def send_digits(self, calluuid, **params):
         return self._request('POST', '/Call/%s/DTMF/' % calluuid, data=params)
 
@@ -237,8 +240,8 @@ class RestAPI(object):
     def kick_member(self, conference_id, member_id):
         return self._request('POST', '/Conference/%s/Member/%s/Kick/' % (conference_id, member_id))
 
-    def record_conference(self, conference_id): 
-        return self._request('POST', '/Conference/%s/Record/' % conference_id)
+    def record_conference(self, conference_id, **params): 
+        return self._request('POST', '/Conference/%s/Record/' % conference_id, params)
 
     def stop_record_conference(self, conference_id): 
         return self._request('DELETE', '/Conference/%s/Record/' % conference_id)
