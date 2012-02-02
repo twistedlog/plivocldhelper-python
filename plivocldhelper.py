@@ -70,329 +70,253 @@ class RestAPI(object):
         return self._request('GET', '')
 
     def modify_account(self, **params):
-        #return self._api().post(params)
         return self._request('POST', '', data=params)
 
     def get_subaccounts(self):
-        #return self._api().Subaccount.get()
         return self._request('GET', '/Subaccount/')
 
     def create_subaccount(self, **params):
-        #return self._api().Subaccount.post(params)
         return self._request('POST', '/Subaccount/', data=params)
 
     def get_subaccount(self, subauth_id):
-        #return self._api().Subaccount(subauth_id).get()
         return self._request('GET', '/Subaccount/%s/' % subauth_id)
 
     def modify_subaccount(self, subauth_id, **params):
-        #return self._api().Subaccount(subauth_id).post(params)
         return self._request('POST', '/Subaccount/%s/' % subauth_id, data=params)
 
     def delete_subaccount(self, subauth_id):
-        #return self._api().Subaccount(subauth_id).delete()
         return self._request('DELETE', '/Subaccount/%s/' % subauth_id)
 
     ## Applications ##
     def get_applications(self, **params):
-        #return self._api().Application.get(**params)
         return self._request('GET', '/Application/', params=params)
 
     def create_application(self, **params):
-        #return self._api().Application.post(params)
         return self._request('POST', '/Application/', data=params)
 
     def get_application(self, app_id):
-        #return self._api().Application(app_id).get()
         return self._request('GET', '/Application/%s/' % app_id)
 
     def modify_application(self, app_id, **params):
-        #return self._api().Application(app_id).post(params)
         return self._request('POST', '/Application/%s/' % app_id, data=params)
 
     def delete_application(self, app_id):
-        #return self._api().Application(app_id).delete()
         return self._request('DELETE', '/Application/%s/' % app_id)
 
     def get_subaccount_applications(self, subauth_id):
-        #return self._api().Subaccount(subauth_id).Application.get()
         return self._request('GET', '/Subaccount/%s/Application/' % subauth_id)
 
+    def get_subaccount_application(self, subauth_id, app_id):
+        return self._request('GET', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id))
+
     def create_subaccount_application(self, subauth_id, **params):
-        #return self._api().Subaccount(subauth_id).Application.get(**params)
         return self._request('POST', '/Subaccount/%s/Application/' % subauth_id, data=params)
 
     def modify_subaccount_application(self, subauth_id, app_id, **params):
-        #return self._api().Subaccount(subauth_id).Application.post(params)
         return self._request('POST', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id), data=params)
 
     def delete_subaccount_application(self, subauth_id, app_id):
-        #return self._api().Subaccount(subauth_id).Application.delete()
         return self._request('DELETE', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id))
 
     ## Numbers ##
     def get_numbers(self, **params):
-        #return self._api().Number.get(**params)
         return self._request('GET', '/Number/', params=params)
 
     def search_numbers(self, **params):
-        #return self._api().Number.Search.get(**params)
         return self._request('GET', '/Number/Search/', params=params)
 
     def get_number(self, number):
-        #return self._api().Number(number).get()
         return self._request('GET', '/Number/%s/' % number)
 
     def rent_number(self, number):
-        #return self._api().Number.Action(number).post({})
         return self._request('POST', '/Number/Action/%s/' % number)
 
     def unrent_number(self, number):
-        #return self._api().Number.Action(number).delete()
         return self._request('DELETE', '/Number/Action/%s/' % number)
 
     def get_subaccount_numbers(self, subauth_id, **params):
-        #return self._api().Number.get(**params)
         return self._request('GET', '/Subaccount/%s/Number/' % subauth_id, params=params)
 
     def get_subaccount_number(self, subauth_id, number):
-        #return self._api().Number.get(**params)
         return self._request('GET', '/Subaccount/%s/Number/%s/' % (subauth_id, number))
 
     ## Schedule ##
     def get_scheduled_tasks(self):
-        #return self._api().Schedule.get()
         return self._request('GET', '/Schedule/')
 
     def cancel_scheduled_task(self, task_id):
-        #return self._api().Schedule(task_id).delete()
         return self._request('DELETE', '/Schedule/%s/' % task_id)
 
     ## Calls ##
     def get_cdrs(self, **params):
-        #return self._api().Call.get(**params)
         return self._request('GET', '/Call/', params=params)
 
     def get_cdr(self, record_id):
-        #return self._api().Call(record_id).get()
         return self._request('GET', '/Call/%s/' % record_id)
 
     def get_live_calls(self):
-        #return self._api().Call.get({'status':'live'})
         return self._request('GET', '/Call/', params={'status':'live'})
 
     def get_live_call(self, calluuid):
-        #return self._api().Call(calluuid).get({'status':'live'})
         return self._request('GET', '/Call/%s/' % calluuid, params={'status':'live'})
 
     def make_call(self, **params):
-        #return self._api().Call.post(params)
         return self._request('POST', '/Call/', data=params)
 
     def hangup_all_calls(self):
-        #return self._api().Call.delete()
         return self._request('DELETE', '/Call/')
 
     def transfer_call(self, calluuid, **params):
-        #return self._api().Call(calluuid).post(params)
         return self._request('POST', '/Call/%s/' % calluuid, data=params)
 
     def hangup_call(self, calluuid):
-        #return self._api().Call(calluuid).delete()
         return self._request('DELETE', '/Call/%s/' % calluuid)
 
     def record(self, calluuid, **params):
-        #return self._api().Call(calluuid).Record.post(params)
         return self._request('POST', '/Call/%s/Record/' % calluuid, data=params)
         
     def stop_record(self, calluuid):
-        #return self._api().Call(calluuid).Record.delete()
         return self._request('DELETE', '/Call/%s/Record/' % calluuid)
 
     def play(self, calluuid, **params):
-        #return self._api().Call(calluuid).Play.post(params)
         return self._request('POST', '/Call/%s/Play/' % calluuid, data=params)
         
     def stop_play(self, calluuid):
-        #return self._api().Call(calluuid).Play.delete()
         return self._request('DELETE', '/Call/%s/Play/' % calluuid)
 
     def send_digits(self, calluuid, **params):
-        #return self._api().Call(calluuid).DTMF.post(params)
         return self._request('POST', '/Call/%s/DTMF/' % calluuid, data=params)
 
     def get_subaccount_cdrs(self, subauth_id, **params):
-        #return self._api().Subaccount(subauth_id).Call.get(**params)
         return self._request('GET', '/Subaccount/%s/Call/' % subauth_id, params=params)
 
     def get_subaccount_cdr(self, subauth_id, record_id):
-        #return self._api().Subaccount(subauth_id).Call(record_id).get()
         return self._request('GET', '/Subaccount/%s/Call/%s/' % (subauth_id, record_id))
 
     ## Calls requests ##
     def hangup_request(self, requestuuid):
-        #return self._api().Request(requestuuid).delete()
         return self._request('DELETE', '/Request/%s/' % requestuuid)
 
     ## Conferences ##
     def get_live_conferences(self, **params):
-        #return self._api().Conference.get(**params)
         return self._request('GET', '/Conference/', params=params)
 
     def hangup_all_conferences(self):
-        #return self._api().Conference.delete()
         return self._request('DELETE', '/Conference/')
 
     def get_live_conference(self, conference_id, **params):
-        #return self._api().Conference(conference_id).get(**params)
         return self._request('GET', '/Conference/%s/' % conference_id, params=params)
 
-    def hangup_conference(self):
-        #return self._api().Conference(conference_id).delete()
+    def hangup_conference(self, conference_id):
         return self._request('DELETE', '/Conference/%s/' % conference_id)
 
     def hangup_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).delete()
         return self._request('DELETE', '/Conference/%s/Member/%s/' % (conference_id, member_id))
 
-    def play_conference(self, conference_id, member_id, **params):
-        #return self._api().Conference(conference_id).Member(member_id).Play.post(params)
+    def play_member(self, conference_id, member_id, **params):
         return self._request('POST', '/Conference/%s/Member/%s/Play/' % (conference_id, member_id), data=params)
         
-    def stop_play_conference(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Play.delete()
+    def stop_play_member(self, conference_id, member_id):
         return self._request('DELETE', '/Conference/%s/Member/%s/Play/' % (conference_id, member_id))
 
-    def speak_conference(self, conference_id, member_id, **params):
-        #return self._api().Conference(conference_id).Member(member_id).Speak.post(params)
+    def speak_member(self, conference_id, member_id, **params):
         return self._request('POST', '/Conference/%s/Member/%s/Speak/' % (conference_id, member_id), data=params)
 
     def deaf_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Deaf.post({})
         return self._request('POST', '/Conference/%s/Member/%s/Deaf/' % (conference_id, member_id))
 
     def undeaf_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Deaf.delete()
         return self._request('DELETE', '/Conference/%s/Member/%s/Deaf/' % (conference_id, member_id))
 
     def mute_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Mute.post({})
         return self._request('POST', '/Conference/%s/Member/%s/Mute/' % (conference_id, member_id))
 
     def unmute_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Unmute.delete()
         return self._request('DELETE', '/Conference/%s/Member/%s/Mute/' % (conference_id, member_id))
 
     def kick_member(self, conference_id, member_id):
-        #return self._api().Conference(conference_id).Member(member_id).Kick.post({})
         return self._request('POST', '/Conference/%s/Member/%s/Kick/' % (conference_id, member_id))
 
     def record_conference(self, conference_id): 
-        #return self._api().Conference(conference_id).Record.post({})
         return self._request('POST', '/Conference/%s/Record/' % conference_id)
 
     def stop_record_conference(self, conference_id): 
-        #return self._api().Conference(conference_id).Record.delete()
         return self._request('DELETE', '/Conference/%s/Record/' % conference_id)
 
     ## Recordings ##
     def get_recordings(self, **params):
-        #return self._api().Recording.get(**params)
         return self._request('GET', '/Recording/', params=params)
 
     def get_recording(self, recording_id):
-        #return self._api().Recording(recording_id).get()
         return self._request('GET', '/Recording/%s/' % recording_id)
 
     def get_subaccount_recordings(self, subauth_id):
-        #return self._api().Subaccount(subauth_id).Recording(recording_id).get()
         return self._request('GET', '/Subaccount/%s/Recording/' % subauth_id)
 
     def get_subaccount_recording(self, subauth_id, recording_id):
-        #return self._api().Subaccount(subauth_id).Recording(recording_id).get()
         return self._request('GET', '/Subaccount/%s/Recording/%s/' % (subauth_id, recording_id))
 
     ## Endpoints ##
     def get_endpoints(self, **params):
-        #return self._api().Endpoint.get(**params)
         return self._request('GET', '/Endpoint/', params=params)
 
     def create_endpoint(self, **params):
-        #return self._api().Endpoint.post(params)
         return self._request('POST', '/Endpoint/', data=params)
 
     def get_endpoint(self, endpoint_id):
-        #return self._api().Endpoint(endpoint_id).get()
         return self._request('GET', '/Endpoint/%s/' % endpoint_id)
 
     def modify_endpoint(self, endpoint_id, **params):
-        #return self._api().Endpoint(endpoint_id).post(params)
         return self._request('POST', '/Endpoint/%s/' % endpoint_id, data=params)
 
     def delete_endpoint(self, endpoint_id):
-        #return self._api().Endpoint(endpoint_id).delete()
         return self._request('DELETE', '/Endpoint/%s/' % endpoint_id)
 
     def get_subaccount_endpoints(self, subauth_id):
-        #return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).get()
         return self._request('GET', '/Subaccount/%s/Endpoint/' % subauth_id)
 
     def create_subaccount_endpoint(self, subauth_id, **params):
-        #return self._api().Subaccount(subauth_id).Endpoint.post(params)
         return self._request('POST', '/Subaccount/%s/Endpoint/' % subauth_id, data=params)
 
     def get_subaccount_endpoint(self, subauth_id, endpoint_id):
-        #return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).get()
         return self._request('GET', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id))
 
     def modify_subaccount_endpoint(self, subauth_id, endpoint_id, **params):
-        #return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).post(params)
         return self._request('POST', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id), data=params)
 
     def delete_subaccount_endpoint(self, subauth_id, endpoint_id):
-        #return self._api().Subaccount(subauth_id).Endpoint(endpoint_id).delete()
         return self._request('DELETE', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id))
 
     ## Carriers ##
     def get_carriers(self, **params):
-        #return self._api().Carrier.get(**params)
         return self._request('GET', '/Carrier/', params=params)
 
     def create_carrier(self, **params):
-        #return self._api().Carrier.post(params)
         return self._request('POST', '/Carrier/', data=params)
 
     def get_carrier(self, carrier_id):
-        #return self._api().Carrier(carrier_id).get()
         return self._request('GET', '/Carrier/%s/' % carrier_id)
 
     def modify_carrier(self, carrier_id, **params):
-        #return self._api().Carrier(carrier_id).post(params)
         return self._request('POST', '/Carrier/%s/' % carrier_id, data=params)
 
     def delete_carrier(self, carrier_id):
-        #return self._api().Carrier(carrier_id).delete()
         return self._request('DELETE', '/Carrier/%s/' % carrier_id)
 
     ## Carrier Routings ##
     def get_carrier_routings(self, **params):
-        #return self._api().CarrierRouting.get(**params)
         return self._request('GET', '/CarrierRouting/', params=params)
 
     def create_carrier_routing(self, **params):
-        #return self._api().CarrierRouting.post(params)
         return self._request('POST', '/CarrierRouting/', data=params)
 
     def get_carrier_routing(self, routing_id):
-        #return self._api().CarrierRouting(routing_id).get()
         return self._request('GET', '/CarrierRouting/%s/' % routing_id)
 
     def modify_carrier_routing(self, routing_id, **params):
-        #return self._api().CarrierRouting(routing_id).post(params)
         return self._request('POST', '/CarrierRouting/%s/' % routing_id, data=params)
 
     def delete_carrier_routing(self, routing_id):
-        #return self._api().CarrierRouting(routing_id).delete()
         return self._request('DELETE', '/CarrierRouting/%s/' % routing_id)
 
 
