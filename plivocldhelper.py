@@ -406,6 +406,9 @@ class Element(object):
     def addConference(self, body, **kwargs):
         return self.add(Conference(body, **kwargs))
 
+    def addMessage(self, body, **kwargs):
+        return self.add(Message(body, **kwargs))
+
 
 class Response(Element):
     nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
