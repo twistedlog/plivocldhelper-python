@@ -541,7 +541,7 @@ class PreAnswer(Element):
 
 class Message(Element):
     nestables = ()
-    valid_attributes = ('from', 'to', 'type')
+    valid_attributes = ('src', 'dst', 'type')
         
     def __init__(self, body, **attributes):
         if not body:
