@@ -411,7 +411,7 @@ class Element(object):
 
 
 class Response(Element):
-    nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial',
+    nestables = ('Speak', 'Play', 'GetDigits', 'Record', 'Dial', 'Message',
                  'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference')
     valid_attributes = ()
 
