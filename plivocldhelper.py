@@ -534,3 +534,15 @@ class PreAnswer(Element):
 
     def __init__(self, **attributes):
         Element.__init__(self, body='', **attributes)
+
+
+class Message(Element):
+    nestables = ()
+    valid_attributes = ('from', 'to', 'type')
+        
+    def __init__(self, body, **attributes):
+        if not body:
+            raise PlivoError('No text set for %s' % self.name)
+        Element.__init__(self, body, **attributes)
+
+
