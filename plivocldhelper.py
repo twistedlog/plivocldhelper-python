@@ -322,6 +322,10 @@ class RestAPI(object):
     def delete_carrier_routing(self, routing_id):
         return self._request('DELETE', '/CarrierRouting/%s/' % routing_id)
 
+    ## Message ##
+    def send_message(self, **params):
+        return self._request('POST', '/Message/', data=params)
+
 
 
 class Element(object):
