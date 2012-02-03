@@ -2,8 +2,8 @@
 import plivocldhelper
 
 # Sid and AuthToken
-AUTH_ID = 'MAMTYYODJINGNJMMUZOT'
-AUTH_TOKEN = 'YTUxMzQ5YzBhOGI5ZjEwOTkwYzNhZTNhMGI5OGNm'
+AUTH_ID = 'YOUR_AUTH_ID'
+AUTH_TOKEN = 'YOUR_AUTH_TOKEN'
 URL = "http://api.plivo.com"
 
 # Create a REST object
