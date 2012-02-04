@@ -63,267 +63,351 @@ class RestAPI(object):
         else:
             response = content
         return (r.status_code, response)
-            
 
+    @staticmethod
+    def get_param(params, key):
+        try:
+            return params[key]
+        except KeyError:
+            raise PlivoException("missing mandatory parameter %s" % key)
+                
     ## Accounts ##
-    def get_account(self):
+    def get_account(self, params={}):
         return self._request('GET', '')
 
-    def modify_account(self, **params):
+    def modify_account(self, params={}):
         return self._request('POST', '', data=params)
 
-    def get_subaccounts(self):
+    def get_subaccounts(self, params={}):
         return self._request('GET', '/Subaccount/')
 
-    def create_subaccount(self, **params):
+    def create_subaccount(self, params={}):
         return self._request('POST', '/Subaccount/', data=params)
 
-    def get_subaccount(self, subauth_id):
+    def get_subaccount(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('GET', '/Subaccount/%s/' % subauth_id)
 
-    def modify_subaccount(self, subauth_id, **params):
+    def modify_subaccount(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('POST', '/Subaccount/%s/' % subauth_id, data=params)
 
-    def delete_subaccount(self, subauth_id):
+    def delete_subaccount(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('DELETE', '/Subaccount/%s/' % subauth_id)
 
     ## Applications ##
-    def get_applications(self, **params):
+    def get_applications(self, params={}):
         return self._request('GET', '/Application/', params=params)
 
-    def create_application(self, **params):
+    def create_application(self, params={}):
         return self._request('POST', '/Application/', data=params)
 
-    def get_application(self, app_id):
+    def get_application(self, params={}):
+        app_id = self.params.pop("app_id")
         return self._request('GET', '/Application/%s/' % app_id)
 
-    def modify_application(self, app_id, **params):
+    def modify_application(self, params={}):
+        app_id = self.params.pop("app_id")
         return self._request('POST', '/Application/%s/' % app_id, data=params)
 
-    def delete_application(self, app_id):
+    def delete_application(self, params={}):
+        app_id = self.params.pop("app_id")
         return self._request('DELETE', '/Application/%s/' % app_id)
 
-    def get_subaccount_applications(self, subauth_id):
+    def get_subaccount_applications(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('GET', '/Subaccount/%s/Application/' % subauth_id)
 
-    def get_subaccount_application(self, subauth_id, app_id):
+    def get_subaccount_application(self, params={}):
+        subauth_id = params.pop("subauth_id")
+        app_id = self.params.pop("app_id")
         return self._request('GET', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id))
 
-    def create_subaccount_application(self, subauth_id, **params):
+    def create_subaccount_application(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('POST', '/Subaccount/%s/Application/' % subauth_id, data=params)
 
-    def modify_subaccount_application(self, subauth_id, app_id, **params):
+    def modify_subaccount_application(self, params={}):
+        subauth_id = params.pop("subauth_id")
+        app_id = self.params.pop("app_id")
         return self._request('POST', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id), data=params)
 
-    def delete_subaccount_application(self, subauth_id, app_id):
+    def delete_subaccount_application(self, params={}):
+        subauth_id = params.pop("subauth_id")
+        app_id = self.params.pop("app_id")
         return self._request('DELETE', '/Subaccount/%s/Application/%s/' % (subauth_id, app_id))
 
     ## Numbers ##
-    def get_numbers(self, **params):
+    def get_numbers(self, params={}):
         return self._request('GET', '/Number/', params=params)
 
-    def search_numbers(self, **params):
+    def search_numbers(self, params={}):
         return self._request('GET', '/Number/Search/', params=params)
 
-    def get_number(self, number):
+    def get_number(self, params={}):
+        number = self.params.pop("number")
         return self._request('GET', '/Number/%s/' % number)
 
-    def rent_number(self, number):
+    def rent_number(self, params={}):
+        number = self.params.pop("number")
         return self._request('POST', '/Number/Action/%s/' % number)
 
-    def unrent_number(self, number):
+    def unrent_number(self, params={}):
+        number = self.params.pop("number")
         return self._request('DELETE', '/Number/Action/%s/' % number)
 
-    def get_subaccount_numbers(self, subauth_id, **params):
+    def get_subaccount_numbers(self, params={}):
+        subauth_id = params.pop("subauth_id")
         return self._request('GET', '/Subaccount/%s/Number/' % subauth_id, params=params)
 
-    def get_subaccount_number(self, subauth_id, number):
+    def get_subaccount_number(self, params={}):
+        subauth_id = params.pop("subauth_id")
+        number = self.params.pop("number")
         return self._request('GET', '/Subaccount/%s/Number/%s/' % (subauth_id, number))
 
     ## Schedule ##
-    def get_scheduled_tasks(self):
+    def get_scheduled_tasks(self, params={}):
         return self._request('GET', '/Schedule/')
 
-    def cancel_scheduled_task(self, task_id):
+    def cancel_scheduled_task(self, params={}):
+        task_id = params.pop("task_id")
         return self._request('DELETE', '/Schedule/%s/' % task_id)
 
     ## Calls ##
-    def get_cdrs(self, **params):
+    def get_cdrs(self, params={}):
         return self._request('GET', '/Call/', params=params)
 
-    def get_cdr(self, record_id):
+    def get_cdr(self, params={}):
+        record_id = params.pop('record_id')
         return self._request('GET', '/Call/%s/' % record_id)
 
-    def get_live_calls(self):
+    def get_live_calls(self, params={}):
         return self._request('GET', '/Call/', params={'status':'live'})
 
-    def get_live_call(self, calluuid):
-        return self._request('GET', '/Call/%s/' % calluuid, params={'status':'live'})
+    def get_live_call(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('GET', '/Call/%s/' % call_uuid, params={'status':'live'})
 
-    def make_call(self, **params):
+    def make_call(self, params={}):
         return self._request('POST', '/Call/', data=params)
 
-    def hangup_all_calls(self):
+    def hangup_all_calls(self, params={}):
         return self._request('DELETE', '/Call/')
 
-    def transfer_call(self, calluuid, **params):
-        return self._request('POST', '/Call/%s/' % calluuid, data=params)
+    def transfer_call(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('POST', '/Call/%s/' % call_uuid, data=params)
 
-    def hangup_call(self, calluuid):
-        return self._request('DELETE', '/Call/%s/' % calluuid)
+    def hangup_call(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('DELETE', '/Call/%s/' % call_uuid)
 
-    def record(self, calluuid, **params):
-        return self._request('POST', '/Call/%s/Record/' % calluuid, data=params)
+    def record(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('POST', '/Call/%s/Record/' % call_uuid, data=params)
         
-    def stop_record(self, calluuid):
-        return self._request('DELETE', '/Call/%s/Record/' % calluuid)
+    def stop_record(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('DELETE', '/Call/%s/Record/' % call_uuid)
 
-    def play(self, calluuid, **params):
-        return self._request('POST', '/Call/%s/Play/' % calluuid, data=params)
+    def play(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('POST', '/Call/%s/Play/' % call_uuid, data=params)
         
-    def stop_play(self, calluuid):
-        return self._request('DELETE', '/Call/%s/Play/' % calluuid)
+    def stop_play(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('DELETE', '/Call/%s/Play/' % call_uuid)
 
-    def speak(self, calluuid, **params):
-        return self._request('POST', '/Call/%s/Speak/' % calluuid, data=params)
+    def speak(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('POST', '/Call/%s/Speak/' % call_uuid, data=params)
         
-    def send_digits(self, calluuid, **params):
-        return self._request('POST', '/Call/%s/DTMF/' % calluuid, data=params)
+    def send_digits(self, params={}):
+        call_uuid = params.pop('call_uuid')
+        return self._request('POST', '/Call/%s/DTMF/' % call_uuid, data=params)
 
-    def get_subaccount_cdrs(self, subauth_id, **params):
+    def get_subaccount_cdrs(self, params={}):
+        subauth_id = params.pop('subauth_id')
         return self._request('GET', '/Subaccount/%s/Call/' % subauth_id, params=params)
 
-    def get_subaccount_cdr(self, subauth_id, record_id):
+    def get_subaccount_cdr(self, params={}):
+        subauth_id = params.pop('subauth_id')
+        record_id = params.pop('record_id')
         return self._request('GET', '/Subaccount/%s/Call/%s/' % (subauth_id, record_id))
 
     ## Calls requests ##
-    def hangup_request(self, requestuuid):
-        return self._request('DELETE', '/Request/%s/' % requestuuid)
+    def hangup_request(self, params={}):
+        request_uuid = params.pp('request_uuid')
+        return self._request('DELETE', '/Request/%s/' % request_uuid)
 
     ## Conferences ##
-    def get_live_conferences(self, **params):
+    def get_live_conferences(self, params={}):
         return self._request('GET', '/Conference/', params=params)
 
-    def hangup_all_conferences(self):
+    def hangup_all_conferences(self, params={}):
         return self._request('DELETE', '/Conference/')
 
-    def get_live_conference(self, conference_id, **params):
+    def get_live_conference(self, params={}):
+        conference_id = params.pop('conference_id')
         return self._request('GET', '/Conference/%s/' % conference_id, params=params)
 
-    def hangup_conference(self, conference_id):
+    def hangup_conference(self, params={}):
+        conference_id = params.pop('conference_id')
         return self._request('DELETE', '/Conference/%s/' % conference_id)
 
-    def hangup_member(self, conference_id, member_id):
+    def hangup_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('DELETE', '/Conference/%s/Member/%s/' % (conference_id, member_id))
 
-    def play_member(self, conference_id, member_id, **params):
+    def play_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('POST', '/Conference/%s/Member/%s/Play/' % (conference_id, member_id), data=params)
         
-    def stop_play_member(self, conference_id, member_id):
+    def stop_play_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('DELETE', '/Conference/%s/Member/%s/Play/' % (conference_id, member_id))
 
-    def speak_member(self, conference_id, member_id, **params):
+    def speak_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('POST', '/Conference/%s/Member/%s/Speak/' % (conference_id, member_id), data=params)
 
-    def deaf_member(self, conference_id, member_id):
+    def deaf_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('POST', '/Conference/%s/Member/%s/Deaf/' % (conference_id, member_id))
 
-    def undeaf_member(self, conference_id, member_id):
+    def undeaf_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('DELETE', '/Conference/%s/Member/%s/Deaf/' % (conference_id, member_id))
 
-    def mute_member(self, conference_id, member_id):
+    def mute_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('POST', '/Conference/%s/Member/%s/Mute/' % (conference_id, member_id))
 
-    def unmute_member(self, conference_id, member_id):
+    def unmute_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('DELETE', '/Conference/%s/Member/%s/Mute/' % (conference_id, member_id))
 
-    def kick_member(self, conference_id, member_id):
+    def kick_member(self, params={}):
+        conference_id = params.pop('conference_id')
+        member_id = params.pop('member_id')
         return self._request('POST', '/Conference/%s/Member/%s/Kick/' % (conference_id, member_id))
 
-    def record_conference(self, conference_id, **params): 
+    def record_conference(self, params={}): 
+        conference_id = params.pop('conference_id')
         return self._request('POST', '/Conference/%s/Record/' % conference_id, params)
 
-    def stop_record_conference(self, conference_id): 
+    def stop_record_conference(self, params={}): 
+        conference_id = params.pop('conference_id')
         return self._request('DELETE', '/Conference/%s/Record/' % conference_id)
 
     ## Recordings ##
-    def get_recordings(self, **params):
+    def get_recordings(self, params={}):
         return self._request('GET', '/Recording/', params=params)
 
-    def get_recording(self, recording_id):
+    def get_recording(self, params={}):
+        recording_id = params.pop('recording_id')
         return self._request('GET', '/Recording/%s/' % recording_id)
 
-    def get_subaccount_recordings(self, subauth_id):
+    def get_subaccount_recordings(self, params={}):
+        subauth_id = params.pop('subauth_id')
         return self._request('GET', '/Subaccount/%s/Recording/' % subauth_id)
 
-    def get_subaccount_recording(self, subauth_id, recording_id):
+    def get_subaccount_recording(self, params={}):
+        subauth_id = params.pop('subauth_id')
+        recording_id = params.pop('recording_id')
         return self._request('GET', '/Subaccount/%s/Recording/%s/' % (subauth_id, recording_id))
 
     ## Endpoints ##
-    def get_endpoints(self, **params):
+    def get_endpoints(self, params={}):
         return self._request('GET', '/Endpoint/', params=params)
 
-    def create_endpoint(self, **params):
+    def create_endpoint(self, params={}):
         return self._request('POST', '/Endpoint/', data=params)
 
-    def get_endpoint(self, endpoint_id):
+    def get_endpoint(self, params={}):
+        endpoint_id = params.pop('endpoint_id')
         return self._request('GET', '/Endpoint/%s/' % endpoint_id)
 
-    def modify_endpoint(self, endpoint_id, **params):
+    def modify_endpoint(self, params={}):
+        endpoint_id = params.pop('endpoint_id')
         return self._request('POST', '/Endpoint/%s/' % endpoint_id, data=params)
 
-    def delete_endpoint(self, endpoint_id):
+    def delete_endpoint(self, params={}):
+        endpoint_id = params.pop('endpoint_id')
         return self._request('DELETE', '/Endpoint/%s/' % endpoint_id)
 
-    def get_subaccount_endpoints(self, subauth_id):
+    def get_subaccount_endpoints(self, params={}):
+        subauth_id = params.pop('subauth_id')
         return self._request('GET', '/Subaccount/%s/Endpoint/' % subauth_id)
 
-    def create_subaccount_endpoint(self, subauth_id, **params):
+    def create_subaccount_endpoint(self, params={}):
+        subauth_id = params.pop('subauth_id')
         return self._request('POST', '/Subaccount/%s/Endpoint/' % subauth_id, data=params)
 
-    def get_subaccount_endpoint(self, subauth_id, endpoint_id):
+    def get_subaccount_endpoint(self, params={}):
+        subauth_id = params.pop('subauth_id')
+        endpoint_id = params.pop('endpoint_id')
         return self._request('GET', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id))
 
-    def modify_subaccount_endpoint(self, subauth_id, endpoint_id, **params):
+    def modify_subaccount_endpoint(self, params={}):
+        subauth_id = params.pop('subauth_id')
+        endpoint_id = params.pop('endpoint_id')
         return self._request('POST', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id), data=params)
 
-    def delete_subaccount_endpoint(self, subauth_id, endpoint_id):
+    def delete_subaccount_endpoint(self, params={}):
+        subauth_id = params.pop('subauth_id')
+        endpoint_id = params.pop('endpoint_id')
         return self._request('DELETE', '/Subaccount/%s/Endpoint/%s/' % (subauth_id, endpoint_id))
 
     ## Carriers ##
-    def get_carriers(self, **params):
+    def get_carriers(self, params={}):
         return self._request('GET', '/Carrier/', params=params)
 
-    def create_carrier(self, **params):
+    def create_carrier(self, params={}):
         return self._request('POST', '/Carrier/', data=params)
 
-    def get_carrier(self, carrier_id):
+    def get_carrier(self, params={}):
+        carrier_id = params.pop('carrier_id')
         return self._request('GET', '/Carrier/%s/' % carrier_id)
 
-    def modify_carrier(self, carrier_id, **params):
+    def modify_carrier(self, params={}):
+        carrier_id = params.pop('carrier_id')
         return self._request('POST', '/Carrier/%s/' % carrier_id, data=params)
 
-    def delete_carrier(self, carrier_id):
+    def delete_carrier(self, params={}):
+        carrier_id = params.pop('carrier_id')
         return self._request('DELETE', '/Carrier/%s/' % carrier_id)
 
     ## Carrier Routings ##
-    def get_carrier_routings(self, **params):
+    def get_carrier_routings(self, params={}):
         return self._request('GET', '/CarrierRouting/', params=params)
 
-    def create_carrier_routing(self, **params):
+    def create_carrier_routing(self, params={}):
         return self._request('POST', '/CarrierRouting/', data=params)
 
-    def get_carrier_routing(self, routing_id):
+    def get_carrier_routing(self, params={}):
+        routing_id = params.pop('routing_id')
         return self._request('GET', '/CarrierRouting/%s/' % routing_id)
 
-    def modify_carrier_routing(self, routing_id, **params):
+    def modify_carrier_routing(self, params={}):
+        routing_id = params.pop('routing_id')
         return self._request('POST', '/CarrierRouting/%s/' % routing_id, data=params)
 
-    def delete_carrier_routing(self, routing_id):
+    def delete_carrier_routing(self, params={}):
+        routing_id = params.pop('routing_id')
         return self._request('DELETE', '/CarrierRouting/%s/' % routing_id)
 
     ## Message ##
-    def send_message(self, **params):
+    def send_message(self, params={}):
         return self._request('POST', '/Message/', data=params)
 
 
