@@ -31,9 +31,10 @@ class RestAPI(object):
         self.auth_id = auth_id
         self.auth_token = auth_token
         self._api = self.url + '/Account/%s' % self.auth_id
-        self.headers = {'User-Agent':'PlivoHelper'}
+        self.headers = {'User-Agent':'PythonPlivo'}
 
     def _request(self, method, path, data={}, params={}):
+        path = path.rstrip('/') + '/'
         if method == 'POST':
             r = requests.post(self._api + path, headers=self.headers, 
                               auth=(self.auth_id, self.auth_token),
@@ -238,7 +239,7 @@ class RestAPI(object):
 
     ## Calls requests ##
     def hangup_request(self, params={}):
-        request_uuid = params.pp('request_uuid')
+        request_uuid = params.pop('request_uuid')
         return self._request('DELETE', '/Request/%s/' % request_uuid)
 
     ## Conferences ##
