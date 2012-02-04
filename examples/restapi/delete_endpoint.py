@@ -1,13 +1,7 @@
-import sys
 import plivocldhelper
-
 
 AUTH_ID = 'YOUR_AUTH_ID'
 AUTH_TOKEN = 'YOUR_AUTH_TOKEN'
-API_URL = "http://api.plivo.com"
 
-
-
-r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN, url=API_URL)
-
-print r.delete_endpoint('17750866878663')
+r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN)
+print r.delete_endpoint({'endpoint_id':'17750866878663'})

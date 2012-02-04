@@ -1,21 +1,10 @@
-#!/usr/bin/env python
 import plivocldhelper
-import sys
 
-
-try:
-    calluuid = sys.argv[1]
-    xfer_url = sys.argv[2]
-except IndexError:
-    print "Need CallUUID TRANSFER_URL"
-    sys.exit(1)
-
-# Sid and AuthToken
 AUTH_ID = 'YOUR_AUTH_ID'
 AUTH_TOKEN = 'YOUR_AUTH_TOKEN'
-API_URL = "http://api.plivo.com"
 
-
-
-r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN, url=API_URL)
-print r.transfer_call(calluuid, url=xfer_url)
+r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN)
+print r.transfer_call({'call_uuid':'XXXX', 
+                       'url':'http://mytransferurl.dom',
+                       'method':'GET'
+                     })

@@ -1,13 +1,8 @@
-import sys
 import plivocldhelper
-
 
 AUTH_ID = 'YOUR_AUTH_ID'
 AUTH_TOKEN = 'YOUR_AUTH_TOKEN'
-API_URL = "http://api.plivo.com"
 
-
-
-r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN, url=API_URL)
-params = {'enabled':True, 'name':'Sub Mike'}
-print r.create_subaccount(**params)
+r = plivocldhelper.RestAPI(AUTH_ID, AUTH_TOKEN)
+params = {'enabled':True, 'name':'MySubAccount'}
+print r.create_subaccount(params)
